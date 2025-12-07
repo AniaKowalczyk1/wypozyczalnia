@@ -31,3 +31,23 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# ===== Java / Spring Boot =====
+/target/
+/*.iml
+/.idea/
+/*.class
+/*.jar
+/*.war
+/.classpath
+/.project
+/.settings/
+
+# ===== Node / React =====
+/frontend/node_modules/
+/frontend/build/
+/frontend/.env
+
+# ===== System =====
+.DS_Store
+Thumbs.db
