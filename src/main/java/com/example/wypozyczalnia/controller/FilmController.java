@@ -20,6 +20,8 @@ public class FilmController {
     // Pobierz wszystkie filmy
     @GetMapping
     public List<Film> getFilmy() {
+        List<Film> filmy = filmRepository.findAll();
+        System.out.println(filmy); // zobacz w konsoli
         return filmRepository.findAll();
     }
 
