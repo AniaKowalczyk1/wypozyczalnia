@@ -11,25 +11,6 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000") // umożliwia dostęp z Reacta
 public class FilmController {
 
-    private final FilmRepository filmRepository;
-
-    public FilmController(FilmRepository filmRepository) {
-        this.filmRepository = filmRepository;
-    }
-
-    // Pobierz wszystkie filmy
-    @GetMapping
-    public List<Film> getFilmy() {
-        List<Film> filmy = filmRepository.findAll();
-        System.out.println(filmy); // zobacz w konsoli
-        return filmRepository.findAll();
-    }
-
-    // Dodaj nowy film
-    @PostMapping
-    public Film addFilm(@RequestBody Film film) {
-        return filmRepository.save(film);
-    }
 
 
 }
