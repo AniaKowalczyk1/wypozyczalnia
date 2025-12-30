@@ -1,0 +1,95 @@
+/* Box-sizing dla wszystkich elementów */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Cała strona */
+.register-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(to right, #43e97b, #38f9d7);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Karta rejestracji */
+.register-card {
+  background: white;
+  padding: 40px 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Tytuł */
+.register-title {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* Formularz */
+.register-form input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  transition: border 0.3s;
+}
+
+.register-form input:focus {
+  border-color: #43e97b;
+  outline: none;
+}
+
+/* Przycisk */
+.register-form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #43e97b;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.register-form button:hover {
+  background-color: #38f9d7;
+}
+
+/* Komunikaty błędów / sukcesu */
+.register-message {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.register-message.error {
+  color: red;
+}
+
+.register-message.success {
+  color: green;
+}
+
+/* Stopka */
+.register-footer {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #555;
+}
+
+.register-footer a {
+  color: #43e97b;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.register-footer a:hover {
+  text-decoration: underline;
+}
