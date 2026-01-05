@@ -1,38 +1,33 @@
 package com.example.wypozyczalnia.model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "egzemplarz")
 public class Egzemplarz {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idEgzemplarza;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = StatusConverter.class)
     private StatusEgzemplarza status = StatusEgzemplarza.DOSTEPNY;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_filmu", nullable = false)
     private Film film;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_filii", nullable = false)
     private Filia filia;
 
-    public Egzemplarz() {}
+    @ManyToMany(mappedBy = "egzemplarze")
+    private List<Wypozyczenie> wypozyczenia = new ArrayList<>();
 
-    public Egzemplarz(StatusEgzemplarza status, Film film, Filia filia) {
-        this.status = status;
-        this.film = film;
-        this.filia = filia;
-    }
-
-    // Gettery i Settery
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // ===== Gettery i Settery =====
+    public Long getIdEgzemplarza() { return idEgzemplarza; }
+    public void setIdEgzemplarza(Long idEgzemplarza) { this.idEgzemplarza = idEgzemplarza; }
 
     public StatusEgzemplarza getStatus() { return status; }
     public void setStatus(StatusEgzemplarza status) { this.status = status; }
@@ -42,4 +37,14 @@ public class Egzemplarz {
 
     public Filia getFilia() { return filia; }
     public void setFilia(Filia filia) { this.filia = filia; }
+
+    public List<Wypozyczenie> getWypozyczenia() { return wypozyczenia; }
+    public void setWypozyczenia(List<Wypozyczenie> wypozyczenia) { this.wypozyczenia = wypozyczenia; }
+
+    // ===== Metoda pomocnicza do dodawania wypożyczenia =====
+    public void addWypozyczenie(Wypozyczenie wypozyczenie) {
+        if (!wypozyczenia.contains(wypozyczenie)) {
+            wypozyczenia.add(wypozyczenie);
+        }
+    }
 }

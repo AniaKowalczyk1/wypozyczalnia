@@ -1,25 +1,26 @@
-package com.example.wypozyczalnia.model;
+package com.example.wypozyczalnia.dto;
 
-import jakarta.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-public class Film {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class FilmAvailabilityDto {
     private Long idFilmu;
-
     private String tytul;
     private String gatunek;
     private int rokWydania;
     private String rezyser;
     private String opis;
+    private List<EgzemplarzDto> egzemplarze;
 
-    // ===== relacje z egzemplarzami =====
-    @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
-    private List<Egzemplarz> egzemplarze = new ArrayList<>();
+    public FilmAvailabilityDto(Long idFilmu, String tytul, String gatunek, int rokWydania,
+                               String rezyser, String opis, List<EgzemplarzDto> egzemplarze) {
+        this.idFilmu = idFilmu;
+        this.tytul = tytul;
+        this.gatunek = gatunek;
+        this.rokWydania = rokWydania;
+        this.rezyser = rezyser;
+        this.opis = opis;
+        this.egzemplarze = egzemplarze;
+    }
 
     // Gettery i settery
     public Long getIdFilmu() { return idFilmu; }
@@ -40,6 +41,6 @@ public class Film {
     public String getOpis() { return opis; }
     public void setOpis(String opis) { this.opis = opis; }
 
-    public List<Egzemplarz> getEgzemplarze() { return egzemplarze; }
-    public void setEgzemplarze(List<Egzemplarz> egzemplarze) { this.egzemplarze = egzemplarze; }
+    public List<EgzemplarzDto> getEgzemplarze() { return egzemplarze; }
+    public void setEgzemplarze(List<EgzemplarzDto> egzemplarze) { this.egzemplarze = egzemplarze; }
 }

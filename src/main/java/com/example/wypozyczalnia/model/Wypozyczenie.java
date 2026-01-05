@@ -2,10 +2,12 @@ package com.example.wypozyczalnia.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 public class Wypozyczenie {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idWypozyczenia;
@@ -14,15 +16,15 @@ public class Wypozyczenie {
     private LocalDate terminZwrotu;
     private LocalDate dataZwrotu;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pracownika")
     private Pracownik pracownik;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_klienta", nullable = false)
     private Klient klient;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_filii", nullable = false)
     private Filia filia;
 
@@ -32,16 +34,38 @@ public class Wypozyczenie {
             joinColumns = @JoinColumn(name = "id_wypozyczenia"),
             inverseJoinColumns = @JoinColumn(name = "id_egzemplarza")
     )
-    private List<Egzemplarz> egzemplarze;
+    private List<Egzemplarz> egzemplarze = new ArrayList<>();
 
-    @OneToOne(mappedBy = "wypozyczenie", cascade = CascadeType.ALL)
-    private Platnosc platnosc;
+    // ===== Gettery i Settery =====
+    public Long getIdWypozyczenia() { return idWypozyczenia; }
+    public void setIdWypozyczenia(Long idWypozyczenia) { this.idWypozyczenia = idWypozyczenia; }
 
-    @OneToOne(mappedBy = "wypozyczenie", cascade = CascadeType.ALL)
-    private Kara kara;
+    public LocalDate getDataWypozyczenia() { return dataWypozyczenia; }
+    public void setDataWypozyczenia(LocalDate dataWypozyczenia) { this.dataWypozyczenia = dataWypozyczenia; }
 
-    @OneToMany(mappedBy = "wypozyczenie")
-    private List<Powiadomienie> powiadomienia;
+    public LocalDate getTerminZwrotu() { return terminZwrotu; }
+    public void setTerminZwrotu(LocalDate terminZwrotu) { this.terminZwrotu = terminZwrotu; }
 
-    // Gettery i Settery
+    public LocalDate getDataZwrotu() { return dataZwrotu; }
+    public void setDataZwrotu(LocalDate dataZwrotu) { this.dataZwrotu = dataZwrotu; }
+
+    public Pracownik getPracownik() { return pracownik; }
+    public void setPracownik(Pracownik pracownik) { this.pracownik = pracownik; }
+
+    public Klient getKlient() { return klient; }
+    public void setKlient(Klient klient) { this.klient = klient; }
+
+    public Filia getFilia() { return filia; }
+    public void setFilia(Filia filia) { this.filia = filia; }
+
+    public List<Egzemplarz> getEgzemplarze() { return egzemplarze; }
+    public void setEgzemplarze(List<Egzemplarz> egzemplarze) { this.egzemplarze = egzemplarze; }
+
+    // ===== Metoda pomocnicza do dodawania egzemplarza =====
+    public void addEgzemplarz(Egzemplarz egzemplarz) {
+        if (!egzemplarze.contains(egzemplarz)) {
+            egzemplarze.add(egzemplarz);
+            egzemplarz.addWypozyczenie(this); // synchronizacja obustronna
+        }
+    }
 }

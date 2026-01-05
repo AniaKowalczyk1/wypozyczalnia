@@ -1,10 +1,10 @@
 package com.example.wypozyczalnia.repository;
 
-import com.example.wypozyczalnia.model.Klient;
+import com.example.wypozyczalnia.model.Platnosc;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.Optional;
 
 @Repository
-public interface KlientRepository extends JpaRepository<Klient, Long> {
+public interface PlatnoscRepository extends JpaRepository<Platnosc, Long> {
+
 }

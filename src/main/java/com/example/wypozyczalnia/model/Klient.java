@@ -1,15 +1,13 @@
 package com.example.wypozyczalnia.model;
 
 import jakarta.persistence.*;
-import java.util.List;
 
 @Entity
-@Table(name = "klient")
 public class Klient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idKlienta;
 
     @Column(nullable = false)
     private String imie;
@@ -17,22 +15,15 @@ public class Klient {
     @Column(nullable = false)
     private String nazwisko;
 
+    @Column
     private String adres;
 
     @OneToOne(mappedBy = "klient")
     private Konto konto;
 
-    public Klient() {}
-
-    public Klient(String imie, String nazwisko, String adres) {
-        this.imie = imie;
-        this.nazwisko = nazwisko;
-        this.adres = adres;
-    }
-
     // Gettery i Settery
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getIdKlienta() { return idKlienta; }
+    public void setIdKlienta(Long idKlienta) { this.idKlienta = idKlienta; }
 
     public String getImie() { return imie; }
     public void setImie(String imie) { this.imie = imie; }

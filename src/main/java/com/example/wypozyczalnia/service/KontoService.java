@@ -24,4 +24,16 @@ public class KontoService {
     public Konto getKontoByLogin(String login) {
         return kontoRepository.findByLogin(login).orElse(null);
     }
+
+    public Konto getKontoWithKlient(String login) {
+        Konto konto = kontoRepository.findByLogin(login).orElse(null);
+        if (konto != null && konto.getKlient() != null) {
+            // wymusza pobranie klienta, jeśli lazy loading
+            konto.getKlient().getIdKlienta();
+        }
+        return konto;
+    }
+
+
+
 }
