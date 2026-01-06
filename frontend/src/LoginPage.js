@@ -13,9 +13,19 @@ function LoginPage({ setIsLoggedIn }) {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:8080/api/login', { login, haslo });
-      const role = response.data;
 
-      localStorage.setItem('role', role);
+      const data = response.data;
+
+      // Zapis wszystkich danych klienta w localStorage
+      localStorage.setItem('idKonta', data.idKonta);
+      localStorage.setItem('idKlienta', data.idKlienta || '');
+      localStorage.setItem('rola', data.rola || '');
+      localStorage.setItem('imie', data.imie || '');
+      localStorage.setItem('nazwisko', data.nazwisko || '');
+      localStorage.setItem('adres', data.adres || '');
+      localStorage.setItem('login', data.login || '');
+      localStorage.setItem('email', data.email || '');
+
       setIsLoggedIn(true);
 
       navigate('/panel'); // przekierowanie do panelu użytkownika

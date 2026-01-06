@@ -1,0 +1,222 @@
+/* ===== Główne ustawienia panelu ===== */
+.user-panel {
+  padding-top: 80px; /* wysokość navbar + margines */
+  padding-left: 50px;
+  padding-right: 50px;
+  padding-bottom: 30px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f2f5;
+  min-height: 100vh;
+  color: #333;
+}
+
+/* ===== Filtry ===== */
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.filters-container input,
+.filters-container select {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.filters-container input:focus,
+.filters-container select:focus {
+  border-color: #4facfe;
+}
+
+/* ===== Siatka filmów ===== */
+.films-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+  justify-content: center;
+}
+
+/* ===== Karty filmów ===== */
+.film-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s, box-shadow 0.2s;
+  max-width: 550px;
+  min-width: 350px;
+  margin: 0 auto;
+}
+
+.film-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.film-card h3 {
+  margin-bottom: 8px;
+  font-size: 18px;
+  color: #222;
+}
+
+.film-card p {
+  margin: 4px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #555;
+}
+
+.film-card .opis {
+  font-size: 13px;
+  color: #666;
+  margin: 10px 0;
+  flex-grow: 1;
+}
+
+/* ===== Przycisk dodawania do koszyka ===== */
+.film-card button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.film-card button:hover {
+  background: linear-gradient(90deg, #00c6ff, #00f2fe);
+}
+
+/* ===== Lista koszyka ===== */
+.cart-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+}
+
+.cart-list li {
+  background: #fff;
+  margin: 5px 0;
+  padding: 10px 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+.cart-list button {
+  background: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.cart-list button:hover {
+  background: #e03e3f;
+}
+
+/* ===== Powiadomienia ===== */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #4caf50;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  z-index: 1000;
+  font-weight: bold;
+  font-size: 14px;
+  animation: fadein 0.3s ease, fadeout 0.3s ease 2.7s;
+}
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeout {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ===== Paginacja ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #4facfe;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.pagination button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #00c6ff;
+}
+
+.pagination span {
+  font-size: 14px;
+  font-weight: 500;
+}
+/* ===== Spinner ładowania ===== */
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+}
+
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #4facfe;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.loader-text {
+  font-size: 16px;
+  color: #555;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

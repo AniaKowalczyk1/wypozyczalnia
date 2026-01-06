@@ -1,0 +1,98 @@
+/* ===== Panel wypożyczeń ===== */
+.rentals-panel {
+  padding: 80px 80px 30px 80px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f2f5;
+  min-height: 100vh;
+  color: #333;
+  box-sizing: border-box;
+}
+
+/* ===== Nagłówki sekcji ===== */
+.rentals-panel h2 {
+  margin-bottom: 15px;
+  color: #4facfe;
+  font-size: 24px;
+  font-weight: 600;
+  border-bottom: 2px solid #4facfe;
+  padding-bottom: 5px;
+}
+
+/* ===== Tabele wypożyczeń ===== */
+.rentals-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Nagłówki tabeli */
+.rentals-table thead {
+  background-color: #4facfe;
+  color: white;
+}
+
+.rentals-table th,
+.rentals-table td {
+  padding: 12px 15px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Ostatni wiersz bez borderu */
+.rentals-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Wiersze tabeli */
+.rentals-table tbody tr {
+  transition: transform 0.2s, background 0.2s;
+}
+
+.rentals-table tbody tr:hover {
+  background: #f5f9ff;
+  transform: translateY(-2px);
+}
+
+/* Kolumna filii i egzemplarzy */
+.filia-column,
+.egzemplarz-column {
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+/* Wyrównanie pustych danych */
+.rentals-table td:empty::before {
+  content: "-";
+  color: #999;
+}
+
+/* ===== Styl pustej tabeli ===== */
+.empty-message {
+  text-align: center;
+  padding: 15px 0;
+  font-style: italic;
+  color: #777;
+}
+
+/* ===== Responsywność ===== */
+@media (max-width: 768px) {
+  .rentals-panel {
+    padding: 40px 20px 20px 20px;
+  }
+
+  .rentals-table th,
+  .rentals-table td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .filia-column,
+  .egzemplarz-column {
+    max-width: 150px;
+  }
+}

@@ -1,0 +1,73 @@
+.price-panel {
+  padding: 80px 50px 30px 50px;
+  background: #f0f2f5;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* ← wyśrodkowanie zawartości */
+}
+
+
+.price-panel h2 {
+  margin-bottom: 15px;
+}
+
+.price-description {
+  max-width: 800px;
+  font-size: 16px;
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+/* ===== Tabela ===== */
+.price-table {
+  width: 100%;
+  max-width: 800px;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  margin-bottom: 30px;
+}
+
+.price-table th,
+.price-table td {
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.price-table th {
+  background: #4facfe;
+  color: white;
+  font-weight: 600;
+}
+
+.price-table tr:nth-child(even) {
+  background: #f8f9fb;
+}
+
+/* ===== Dostawa ===== */
+.delivery-box {
+  max-width: 800px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+.delivery-box h3 {
+  margin-bottom: 10px;
+}
+
+/* ===== Stopka ===== */
+.price-footer {
+  max-width: 800px;
+  font-size: 14px;
+  color: #666;
+}
+
