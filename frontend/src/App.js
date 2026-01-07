@@ -6,10 +6,14 @@ import UserPanel from './UserPanel';
 import Cart from './Cart';
 import Cennik from './Cennik';
 import MyRentals from './MyRentals';
-
+import AdminPanel from './AdminPanel';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('role'));
+  //const userRole = (localStorage.getItem('rola') || '').toLowerCase();
+  const getRole = () => (localStorage.getItem('rola') || '').toLowerCase();
+  const staffRoles = ['admin', 'pracownik', 'kasjer', 'kierownik'];
+
 
   // Nasłuch zmian w localStorage (np. wylogowanie w innej zakładce)
   useEffect(() => {
@@ -27,7 +31,8 @@ function App() {
           path="/"
           element={
             isLoggedIn
-              ? <Navigate to="/panel" />
+                ? (staffRoles.includes(getRole())
+                    ? <Navigate to="/admin" /> : <Navigate to="/panel" />)
               : <LoginPage setIsLoggedIn={setIsLoggedIn} />
           }
         />
@@ -41,6 +46,14 @@ function App() {
           }
         />
 
+        <Route
+          path="/admin"
+            element={
+              isLoggedIn && staffRoles.includes(getRole())
+                ? <AdminPanel setIsLoggedIn={setIsLoggedIn} />
+                : <Navigate to="/" />
+            }
+        />
         <Route
           path="/panel"
           element={
@@ -76,7 +89,6 @@ function App() {
               : <Navigate to="/" />
           }
         />
-
       </Routes>
     </Router>
   );

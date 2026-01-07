@@ -3,6 +3,7 @@ package com.example.wypozyczalnia.model;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Filia {
@@ -16,9 +17,11 @@ public class Filia {
     private String telefon;
     private String email;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "filia", cascade = CascadeType.ALL)
     private List<Egzemplarz> egzemplarze = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "filia")
     private List<Wypozyczenie> wypozyczenia = new ArrayList<>();
 

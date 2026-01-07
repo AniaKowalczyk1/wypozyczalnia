@@ -1,0 +1,148 @@
+/* AdminPanel.css */
+
+.admin-panel {
+    padding: 100px 50px 50px 50px; /* Miejsce pod Navbar */
+    background: #f4f7f9;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.admin-panel h2 {
+    color: #2c3e50;
+    margin-bottom: 30px;
+    text-align: center;
+    font-size: 28px;
+}
+
+.admin-msg {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Karta formularza dodawania */
+.admin-card {
+    background: white;
+    max-width: 600px;
+    margin: 0 auto 40px auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.admin-card h3 {
+    margin-top: 0;
+    color: #4facfe;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.admin-card select {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #fafafa;
+}
+
+.admin-card button {
+    padding: 12px;
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.admin-card button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 233, 123, 0.4);
+}
+
+/* Lista inwentarza */
+.inventory-list {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.admin-film-row {
+    background: white;
+    margin-bottom: 15px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.admin-film-row strong {
+    font-size: 18px;
+    color: #34495e;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.admin-film-row ul {
+    list-style: none;
+    padding: 0;
+}
+
+.admin-film-row li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.admin-film-row li:last-child {
+    border-bottom: none;
+}
+
+/* Przycisk usuwania */
+.del-btn {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+.del-btn:hover {
+    background-color: #d9363e;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+    .admin-panel {
+        padding: 80px 20px 20px 20px;
+    }
+    .admin-film-row li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .del-btn {
+        align-self: flex-end;
+    }
+}

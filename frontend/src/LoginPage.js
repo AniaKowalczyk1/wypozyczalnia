@@ -13,7 +13,6 @@ function LoginPage({ setIsLoggedIn }) {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:8080/api/login', { login, haslo });
-
       const data = response.data;
 
       // Zapis wszystkich danych klienta w localStorage
@@ -28,7 +27,13 @@ function LoginPage({ setIsLoggedIn }) {
 
       setIsLoggedIn(true);
 
-      navigate('/panel'); // przekierowanie do panelu użytkownika
+      const staffRoles = ['admin', 'pracownik', 'kasjer', 'kierownik'];
+
+      if (staffRoles.includes(data.rola.toLowerCase())) {
+        navigate('/admin'); // Pracownicy trafiają do Panelu Zarządzania
+      } else {
+        navigate('/panel'); // Klienci trafiają do Listy Filmów
+      }
     } catch (error) {
       if (error.response && error.response.status === 401) {
         setLoginMessage('Nieprawidłowy login lub hasło');
@@ -39,32 +44,32 @@ function LoginPage({ setIsLoggedIn }) {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <h2 className="login-title">Logowanie</h2>
-        <form onSubmit={handleLogin} className="login-form">
-          <input
-            type="text"
-            placeholder="Login"
-            value={login}
-            onChange={e => setLogin(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Hasło"
-            value={haslo}
-            onChange={e => setHaslo(e.target.value)}
-            required
-          />
-          <button type="submit">Zaloguj</button>
-        </form>
-        {loginMessage && <p className="login-message">{loginMessage}</p>}
-        <p className="login-footer">
-          Nie masz konta? <Link to="/register">Zarejestruj się</Link>
-        </p>
+      <div className="login-page">
+        <div className="login-card">
+          <h2 className="login-title">Logowanie</h2>
+          <form onSubmit={handleLogin} className="login-form">
+            <input
+                type="text"
+                placeholder="Login"
+                value={login}
+                onChange={e => setLogin(e.target.value)}
+                required
+            />
+            <input
+                type="password"
+                placeholder="Hasło"
+                value={haslo}
+                onChange={e => setHaslo(e.target.value)}
+                required
+            />
+            <button type="submit">Zaloguj</button>
+          </form>
+          {loginMessage && <p className="login-message">{loginMessage}</p>}
+          <p className="login-footer">
+            Nie masz konta? <Link to="/register">Zarejestruj się</Link>
+          </p>
+        </div>
       </div>
-    </div>
   );
 }
 
