@@ -10,18 +10,28 @@ function RegisterPage() {
   const [regLogin, setRegLogin] = useState('');
   const [email, setEmail] = useState('');
   const [regHaslo, setRegHaslo] = useState('');
+  const [regHasloConfirm, setRegHasloConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [regMessage, setRegMessage] = useState('');
   const navigate = useNavigate();
 
   const validateInputs = () => {
-    const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
+    const nameRegex = /^[A-Za-ząćęłńóśźżĄĆĘŁŃÓŚŹŻ\s'-]+$/;
     if (!nameRegex.test(imie)) return "Imię może zawierać tylko litery, spacje i myślniki";
     if (!nameRegex.test(nazwisko)) return "Nazwisko może zawierać tylko litery, spacje i myślniki";
-    if (regLogin.length < 4) return "Login musi mieć co najmniej 4 znaki";
+
+    const loginRegex = /^[A-Za-ząćęłńóśźżĄĆĘŁŃÓŚŹŻ0-9_-]{4,}$/;
+    if (!loginRegex.test(regLogin)) return "Login musi mieć co najmniej 4 znaki i może zawierać litery, cyfry, _ lub -";
+
     if (regHaslo.length < 6) return "Hasło musi mieć co najmniej 6 znaków";
+    if (regHaslo !== regHasloConfirm) return "Hasła nie są takie same";
+
     const emailRegex = /\S+@\S+\.\S+/;
     if (!emailRegex.test(email)) return "Niepoprawny format email";
-    if (adres.length < 5) return "Adres musi mieć co najmniej 5 znaków";
+
+    const addressRegex = /^[A-Za-ząćęłńóśźżĄĆĘŁŃÓŚŹŻ0-9\s.,/-]{5,}$/;
+    if (!addressRegex.test(adres)) return "Adres musi mieć co najmniej 5 znaków i może zawierać litery, cyfry, spacje, przecinki, kropki, myślniki i ukośniki";
+
     return null;
   };
 
@@ -40,7 +50,7 @@ function RegisterPage() {
 
       setRegMessage('Rejestracja zakończona sukcesem! Przekierowanie do logowania...');
       setImie(''); setNazwisko(''); setAdres('');
-      setRegLogin(''); setEmail(''); setRegHaslo('');
+      setRegLogin(''); setEmail(''); setRegHaslo(''); setRegHasloConfirm('');
 
       setTimeout(() => navigate('/'), 500);
 
@@ -65,7 +75,59 @@ function RegisterPage() {
           <input type="text" placeholder="Adres" value={adres} onChange={e => setAdres(e.target.value)} required />
           <input type="text" placeholder="Login" value={regLogin} onChange={e => setRegLogin(e.target.value)} required />
           <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-          <input type="password" placeholder="Hasło" value={regHaslo} onChange={e => setRegHaslo(e.target.value)} required />
+
+          {/* ===== Hasło z ikoną ===== */}
+          <div className="password-wrapper">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Hasło"
+              value={regHaslo}
+              onChange={e => setRegHaslo(e.target.value)}
+              required
+            />
+            <div
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+              title={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
+            >
+              {showPassword ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94a10 10 0 0 1-11.88 0M1 1l22 22"/>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              )}
+            </div>
+          </div>
+
+          <div className="password-wrapper">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Powtórz hasło"
+              value={regHasloConfirm}
+              onChange={e => setRegHasloConfirm(e.target.value)}
+              required
+            />
+            <div
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94a10 10 0 0 1-11.88 0M1 1l22 22"/>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              )}
+            </div>
+          </div>
+
           <button type="submit">Zarejestruj</button>
         </form>
 
