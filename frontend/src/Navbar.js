@@ -43,6 +43,14 @@ function Navbar({ setIsLoggedIn }) {
           Wypożyczenia
         </button>
 
+        <button
+          className={`nav-btn ${location.pathname === '/my-reservations' ? 'active' : ''}`}
+          onClick={() => navigate('/my-reservations')}
+        >
+          Rezerwacje
+        </button>
+
+
          <button
             className={`nav-btn ${location.pathname === '/my-fines' ? 'active' : ''}`}
             onClick={() => navigate('/my-fines')}

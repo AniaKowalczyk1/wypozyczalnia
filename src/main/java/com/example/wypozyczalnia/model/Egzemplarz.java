@@ -25,6 +25,10 @@ public class Egzemplarz {
     @ManyToMany(mappedBy = "egzemplarze")
     private List<Wypozyczenie> wypozyczenia = new ArrayList<>();
 
+    @ManyToMany(mappedBy = "egzemplarze")
+    private List<Rezerwacja> rezerwacje = new ArrayList<>();
+
+
     // ===== Gettery i Settery =====
     public Long getIdEgzemplarza() { return idEgzemplarza; }
     public void setIdEgzemplarza(Long idEgzemplarza) { this.idEgzemplarza = idEgzemplarza; }
@@ -47,4 +51,13 @@ public class Egzemplarz {
             wypozyczenia.add(wypozyczenie);
         }
     }
+
+    // ===== Metoda pomocnicza do dodawania rezerwacji =====
+    public void addRezerwacja(Rezerwacja rezerwacja) {
+        if (!rezerwacje.contains(rezerwacja)) {
+            rezerwacje.add(rezerwacja);
+            rezerwacja.addEgzemplarz(this); // synchronizacja obustronna
+        }
+    }
+
 }

@@ -8,6 +8,8 @@ import Cennik from './Cennik';
 import MyRentals from './MyRentals';
 import MyFines from './MyFines';
 import AdminPanel from './AdminPanel';
+import MyReservations from './MyReservations';
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('role'));
@@ -99,6 +101,16 @@ function App() {
               : <Navigate to="/" />
           }
         />
+
+        <Route
+          path="/my-reservations"
+          element={
+            isLoggedIn
+              ? <MyReservations setIsLoggedIn={setIsLoggedIn} />
+              : <Navigate to="/" />
+          }
+        />
+
 
       </Routes>
     </Router>

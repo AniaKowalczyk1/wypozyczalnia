@@ -34,17 +34,6 @@ public class WypozyczenieController {
         }
     }
 
-    @PostMapping("/reserve")
-    public ResponseEntity<?> reserveEgzemplarze(@RequestBody ReserveRequest request) {
-        try {
-            Wypozyczenie wypozyczenie = wypozyczenieService.reserveEgzemplarze(request);
-            return ResponseEntity.ok(wypozyczenie);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
 
     @GetMapping("/kary/{idKlienta}")
     public ResponseEntity<List<KaraDto>> getKary(@PathVariable Long idKlienta) {

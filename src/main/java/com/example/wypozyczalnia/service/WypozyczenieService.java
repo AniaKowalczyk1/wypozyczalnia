@@ -121,43 +121,7 @@ public class WypozyczenieService {
     }
 
 
-    @Transactional
-    public Wypozyczenie reserveEgzemplarze(ReserveRequest request) {
-        Konto konto = kontoRepo.findById(request.getIdKonta())
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono konta: " + request.getIdKonta()));
 
-        Klient klient = konto.getKlient();
-        if (klient == null)
-            throw new RuntimeException("Konto nie jest powiązane z klientem: " + request.getIdKonta());
-
-        Filia filia = filiaRepo.findById(request.getIdFilii())
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono filii: " + request.getIdFilii()));
-
-        Wypozyczenie wypozyczenie = new Wypozyczenie();
-        wypozyczenie.setKlient(klient);
-        wypozyczenie.setFilia(filia);
-        wypozyczenie.setDataWypozyczenia(LocalDate.now());
-        wypozyczenie.setTerminZwrotu(LocalDate.now().plusDays(7)); // np. 7 dni rezerwacja
-        wypozyczenie.setDataZwrotu(null);
-
-        List<Egzemplarz> egzemplarze = egzemplarzRepo.findAllById(request.getEgzemplarzeId());
-        if (egzemplarze.isEmpty())
-            throw new RuntimeException("Brak egzemplarzy do rezerwacji");
-
-        for (Egzemplarz e : egzemplarze) {
-            if (!e.getStatus().equals(StatusEgzemplarza.DOSTEPNY)) {
-                throw new RuntimeException("Egzemplarz " + e.getIdEgzemplarza() + " nie jest dostępny");
-            }
-            e.setStatus(StatusEgzemplarza.ZAREZERWOWANY); // zmiana statusu
-            wypozyczenie.addEgzemplarz(e);
-        }
-
-        Wypozyczenie saved = wypozyczenieRepo.save(wypozyczenie);
-        egzemplarzRepo.saveAll(egzemplarze);
-        System.out.println("Wypożyczenie zakończone sukcesem: ID=" + saved.getIdWypozyczenia());
-
-        return saved;
-    }
 
 
 }
