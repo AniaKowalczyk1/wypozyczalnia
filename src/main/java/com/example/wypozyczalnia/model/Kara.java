@@ -18,6 +18,7 @@ public class Kara {
     @JoinColumn(name = "id_wypozyczenia", nullable = false, unique = true)
     private Wypozyczenie wypozyczenie;
 
+
     // Gettery i Settery
     public Long getIdKary() { return idKary; }
     public void setIdKary(Long idKary) { this.idKary = idKary; }

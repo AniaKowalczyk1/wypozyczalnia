@@ -77,9 +77,15 @@ function UserPanel({ setIsLoggedIn }) {
   // ===== Filtracja =====
   const filteredFilms = films.filter(film => {
     const matchesTitle = film.tytul.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesGenre = genreFilter ? film.gatunek.toLowerCase() === genreFilter.toLowerCase() : true;
-    const matchesDirector = directorFilter ? film.rezyser.toLowerCase() === directorFilter.toLowerCase() : true;
-    const matchesYear = yearFilter ? String(film.rokWydania) === yearFilter : true;
+    const matchesGenre = genreFilter
+      ? film.gatunek.toLowerCase().includes(genreFilter.toLowerCase())
+      : true;
+    const matchesDirector = directorFilter
+      ? film.rezyser.toLowerCase().includes(directorFilter.toLowerCase())
+      : true;
+    const matchesYear = yearFilter
+      ? String(film.rokWydania).includes(yearFilter)
+      : true;
 
     // Film pojawia się tylko, jeśli ma przynajmniej jeden egzemplarz pasujący do filii i statusu
     const matchesBranchAndStatus = film.egzemplarze.some(e =>
@@ -89,6 +95,7 @@ function UserPanel({ setIsLoggedIn }) {
 
     return matchesTitle && matchesGenre && matchesDirector && matchesYear && matchesBranchAndStatus;
   });
+
 
   // ===== Paginacja =====
   const totalPages = Math.ceil(filteredFilms.length / filmsPerPage);
@@ -101,14 +108,6 @@ function UserPanel({ setIsLoggedIn }) {
     setCurrentPage(pageNumber);
   };
 
-  if (loading) {
-    return (
-      <div className="loader-container">
-        <div className="loader"></div>
-        <div className="loader-text">Ładowanie filmów...</div>
-      </div>
-    );
-  }
   const Pagination = () => (
     <div className="pagination">
       <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>◀ Poprzednia</button>
@@ -150,14 +149,12 @@ function UserPanel({ setIsLoggedIn }) {
           value={yearFilter}
           onChange={e => { setYearFilter(e.target.value); setCurrentPage(1); }}
         />
-        {/* Dropdown filii */}
         <select value={branchFilter} onChange={e => { setBranchFilter(e.target.value); setCurrentPage(1); }}>
           <option value="">Wszystkie filie</option>
           {branches.map(branch => (
             <option key={branch} value={branch}>{branch}</option>
           ))}
         </select>
-        {/* Dropdown status */}
         <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
           <option value="">Wszystkie statusy</option>
           {statuses.map(status => (
@@ -169,12 +166,22 @@ function UserPanel({ setIsLoggedIn }) {
       {/* Paginacja nad filmami */}
       {totalPages > 1 && <Pagination />}
 
-      <div className="films-container">
-        {currentFilms.length === 0 ? (
+      {/* ===== Lista filmów z animacją ===== */}
+      <div className={`films-container ${loading ? 'loading' : 'loaded'}`}>
+        {loading ? (
+          <div className="loader-container">
+            <div className="loader"></div>
+            <div className="loader-text">Ładowanie filmów...</div>
+          </div>
+        ) : currentFilms.length === 0 ? (
           <p>Brak wyników dla podanych filtrów</p>
         ) : (
-          currentFilms.map(film => (
-            <div key={film.idFilmu} className="film-card">
+          currentFilms.map((film, index) => (
+            <div
+              key={film.idFilmu}
+              className="film-card"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
               <h3>{film.tytul}</h3>
               <p><b>Gatunek:</b> {film.gatunek}</p>
               <p><b>Rok:</b> {film.rokWydania}</p>
@@ -200,6 +207,7 @@ function UserPanel({ setIsLoggedIn }) {
           ))
         )}
       </div>
+
 
       {/* Paginacja pod filmami */}
       {totalPages > 1 && <Pagination />}

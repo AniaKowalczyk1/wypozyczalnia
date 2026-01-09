@@ -41,7 +41,7 @@
   justify-content: center;
 }
 
-/* ===== Karty filmów ===== */
+/* Animacja pojawiania każdej karty osobno */
 .film-card {
   background: #fff;
   padding: 20px;
@@ -54,6 +54,16 @@
   max-width: 550px;
   min-width: 350px;
   margin: 0 auto;
+
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUpCard 0.5s forwards;
+}
+
+/* Każda karta ma staggered delay ustawiany inline w React */
+@keyframes fadeInUpCard {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .film-card:hover {
@@ -191,14 +201,23 @@
   font-size: 14px;
   font-weight: 500;
 }
+
+
 /* ===== Spinner ładowania ===== */
 .loader-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 50vh;
+  z-index: 9999;
+  text-align: center;
 }
+
 
 .loader {
   border: 6px solid #f3f3f3;
@@ -207,13 +226,14 @@
   width: 60px;
   height: 60px;
   animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .loader-text {
   font-size: 16px;
   color: #555;
   font-weight: 500;
+  text-align: center;
 }
 
 @keyframes spin {

@@ -1,7 +1,9 @@
 package com.example.wypozyczalnia.controller;
 
+import com.example.wypozyczalnia.dto.KaraDto;
 import com.example.wypozyczalnia.dto.WypozyczenieRequest;
 import com.example.wypozyczalnia.model.Wypozyczenie;
+import com.example.wypozyczalnia.service.KaraService;
 import com.example.wypozyczalnia.service.WypozyczenieService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +16,11 @@ import java.util.List;
 public class WypozyczenieController {
 
     private final WypozyczenieService wypozyczenieService;
+    private final KaraService karaService;
 
-    public WypozyczenieController(WypozyczenieService wypozyczenieService) {
+    public WypozyczenieController(WypozyczenieService wypozyczenieService, KaraService karaService) {
         this.wypozyczenieService = wypozyczenieService;
+        this.karaService = karaService;
     }
 
     @PostMapping
@@ -40,5 +44,13 @@ public class WypozyczenieController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
+    @GetMapping("/kary/{idKlienta}")
+    public ResponseEntity<List<KaraDto>> getKary(@PathVariable Long idKlienta) {
+        List<KaraDto> kary = karaService.getKaryDlaKlienta(idKlienta);
+        return ResponseEntity.ok(kary);
+    }
+
 
 }

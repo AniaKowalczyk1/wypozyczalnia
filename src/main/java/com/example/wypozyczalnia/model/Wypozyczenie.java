@@ -36,7 +36,13 @@ public class Wypozyczenie {
     )
     private List<Egzemplarz> egzemplarze = new ArrayList<>();
 
+    @OneToOne(mappedBy = "wypozyczenie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Kara kara;
+
     // ===== Gettery i Settery =====
+    public Kara getKara() {return kara;}
+    public void setKara(Kara kara) { this.kara = kara; }
+
     public Long getIdWypozyczenia() { return idWypozyczenia; }
     public void setIdWypozyczenia(Long idWypozyczenia) { this.idWypozyczenia = idWypozyczenia; }
 

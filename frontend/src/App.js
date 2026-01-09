@@ -6,6 +6,7 @@ import UserPanel from './UserPanel';
 import Cart from './Cart';
 import Cennik from './Cennik';
 import MyRentals from './MyRentals';
+import MyFines from './MyFines';
 import AdminPanel from './AdminPanel';
 
 function App() {
@@ -89,6 +90,16 @@ function App() {
               : <Navigate to="/" />
           }
         />
+
+        <Route
+          path="/my-fines"
+          element={
+            isLoggedIn
+              ? <MyFines setIsLoggedIn={setIsLoggedIn} />
+              : <Navigate to="/" />
+          }
+        />
+
       </Routes>
     </Router>
   );

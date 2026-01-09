@@ -16,4 +16,5 @@ public interface WypozyczenieRepository extends JpaRepository<Wypozyczenie, Long
 
     // Tylko przeszłe (już zwrócone) wypożyczenia
     List<Wypozyczenie> findByKlientIdKlientaAndDataZwrotuIsNotNull(Long idKlienta);
+
 }

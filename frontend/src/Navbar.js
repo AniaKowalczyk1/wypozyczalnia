@@ -42,6 +42,16 @@ function Navbar({ setIsLoggedIn }) {
         >
           Wypożyczenia
         </button>
+
+         <button
+            className={`nav-btn ${location.pathname === '/my-fines' ? 'active' : ''}`}
+            onClick={() => navigate('/my-fines')}
+          >
+            Kary
+         </button>
+
+
+
       </div>
 
       <div className="nav-right">

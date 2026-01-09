@@ -1,0 +1,94 @@
+/* ===== Panel kar ===== */
+.fines-panel {
+  padding: 80px 80px 30px 80px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f2f5;
+  min-height: 100vh;
+  color: #333;
+  box-sizing: border-box;
+}
+
+/* ===== Nagłówki sekcji ===== */
+.fines-panel h2 {
+  margin-bottom: 15px;
+  color: #4facfe; /* taki sam kolor jak w rentals-panel */
+  font-size: 24px;
+  font-weight: 600;
+  border-bottom: 2px solid #4facfe;
+  padding-bottom: 5px;
+}
+
+/* ===== Tabela kar ===== */
+.fines-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.fines-table thead {
+  background-color: #4facfe;
+  color: white;
+}
+
+.fines-table th,
+.fines-table td {
+  padding: 12px 15px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Ostatni wiersz bez borderu */
+.fines-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Wiersze tabeli */
+.fines-table tbody tr {
+  transition: transform 0.2s, background 0.2s;
+}
+
+.fines-table tbody tr:hover {
+  background: #f5f9ff;
+  transform: translateY(-2px);
+}
+
+/* Kolory wierszy w zależności od opłacone/nieopłacone */
+.fines-table tbody tr.unpaid {
+  color: #ff4d4f; /* czerwony dla nieopłaconych */
+}
+
+.fines-table tbody tr.paid {
+  color: #4caf50; /* zielony dla opłaconych */
+}
+
+/* Wyrównanie pustych danych */
+.fines-table td:empty::before {
+  content: "-";
+  color: #999;
+}
+
+/* Styl pustej tabeli */
+.empty-message {
+  text-align: center;
+  padding: 15px 0;
+  font-style: italic;
+  color: #777;
+}
+
+/* ===== Responsywność ===== */
+@media (max-width: 768px) {
+  .fines-panel {
+    padding: 40px 20px 20px 20px;
+  }
+
+  .fines-table th,
+  .fines-table td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+}
