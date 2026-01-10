@@ -51,10 +51,19 @@ public class AdminEgzemplarzController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEgzemplarz(@PathVariable Long id) {
         try {
+            Egzemplarz egzemplarz = egzemplarzRepo.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Nie znaleziono egzemplarza"));
+
+            // Sprawdzamy status (zakładając, że StatusEgzemplarza to Enum)
+            if (!egzemplarz.getStatus().toString().equals("DOSTEPNY")) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Nie można usunąć egzemplarza o statusie: " + egzemplarz.getStatus()));
+            }
+
             egzemplarzRepo.deleteById(id);
             return ResponseEntity.ok(Map.of("message", "Usunięto egzemplarz"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Błąd podczas usuwania: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Błąd: " + e.getMessage());
         }
     }
 }
