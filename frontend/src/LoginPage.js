@@ -26,6 +26,9 @@ function LoginPage({ setIsLoggedIn }) {
       localStorage.setItem('login', data.login || '');
       localStorage.setItem('email', data.email || '');
 
+      localStorage.setItem('idFilii', data.idFilii || '');
+      localStorage.setItem('nazwaFilii', data.nazwaFilii || '');
+
       setIsLoggedIn(true);
 
       const staffRoles = ['admin', 'pracownik', 'kasjer', 'kierownik'];

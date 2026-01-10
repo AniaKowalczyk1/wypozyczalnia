@@ -1,179 +1,176 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Select from 'react-select';
 import AdminNavbar from './AdminNavbar';
-import './AdminPanel.css';
+import './UserPanel.css'; // Importujemy te same style co użytkownik
 
 function AdminPanel({ setIsLoggedIn }) {
+    const adminFiliaId = localStorage.getItem('idFilii');
+    const nazwaFilii = localStorage.getItem('nazwaFilii');
     const [films, setFilms] = useState([]);
-    const [filie, setFilie] = useState([]);
-    const [selectedFilm, setSelectedFilm] = useState(null);
-    const [selectedFilia, setSelectedFilia] = useState(null);
-    const [message, setMessage] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [notification, setNotification] = useState(null);
+    const [selectedEgzemplarz, setSelectedEgzemplarz] = useState(null);
+
+    // Paginacja
+    const [currentPage, setCurrentPage] = useState(1);
+    const filmsPerPage = 25;
+
+    // Filtry
+    const [searchQuery, setSearchQuery] = useState('');
+    const [genreFilter, setGenreFilter] = useState('');
+    const [directorFilter, setDirectorFilter] = useState('');
+    const [yearFilter, setYearFilter] = useState('');
+    const [branchFilter, setBranchFilter] = useState('');
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchFilms = async () => {
             try {
-                const resFilms = await axios.get('http://localhost:8080/api/films');
-                const resFilie = await axios.get('http://localhost:8080/api/filie');
-
-                console.log("Dane filii z API:", resFilie.data);
-
-                // Gwarantujemy, że ustawiamy tablicę, nawet jeśli API zwróciło coś dziwnego
-                if (resFilms.data && Array.isArray(resFilms.data)) {
-                    setFilms(resFilms.data);
-                } else {
-                    setFilms([]);
-                }
-
-                if (resFilie.data && Array.isArray(resFilie.data)) {
-                    setFilie(resFilie.data);
-                } else {
-                    // Jeśli resFilie.data nie jest tablicą (np. jest obiektem błędu), ustawiamy pustą listę
-                    setFilie([]);
-                    console.error("API nie zwróciło tablicy dla filii!");
-                }
-
+                const res = await axios.get('http://localhost:8080/api/films');
+                setFilms(res.data);
             } catch (err) {
-                console.error("Błąd podczas pobierania danych:", err);
-                setFilms([]);
-                setFilie([]);
+                console.error(err);
+                showNotification('❌ Błąd pobierania filmów');
+            } finally {
+                setLoading(false);
             }
         };
-        fetchData();
+        fetchFilms();
     }, []);
 
-    // Przygotowanie opcji dla wyszukiwarki filmów
-    const filmOptions = films.map(f => ({
-        value: f.idFilmu,
-        label: `${f.tytul} (${f.rokWydania})`
-    }));
-
-    // Przygotowanie opcji dla wyszukiwarki filii
-    const filiaOptions = filie.map(f => ({
-        value: f.idFilii,
-        label: f.nazwa
-    }));
-
-    const handleAdd = async (e) => {
-        e.preventDefault();
-        if (!selectedFilm || !selectedFilia) {
-            setMessage('❌ Proszę wybrać film i filię');
-            return;
-        }
-
-        try {
-            await axios.post('http://localhost:8080/api/admin/egzemplarze', {
-                idFilmu: selectedFilm.value,
-                idFilii: selectedFilia.value
-            });
-            setMessage('✅ Pomyślnie dodano nowy egzemplarz!');
-            // Opcjonalnie: odśwież dane
-        } catch (err) {
-            setMessage('❌ Błąd podczas dodawania');
-        }
+    const showNotification = (message) => {
+        setNotification(message);
+        setTimeout(() => setNotification(null), 3000);
     };
 
-    const deleteEgzemplarz = async (id) => {
-        if (!window.confirm("Czy na pewno chcesz usunąć ten egzemplarz?")) return;
-        try {
-            await axios.delete(`http://localhost:8080/api/admin/egzemplarze/${id}`);
-            setMessage('🗑️ Usunięto egzemplarz');
-            // Odśwież listę filmów po usunięciu
-            const res = await axios.get('http://localhost:8080/api/films');
-            setFilms(res.data);
-        } catch (err) {
-            setMessage('❌ Błąd podczas usuwania');
-        }
+    // Filtrowanie filmów pod kątem filii pracownika
+    const filteredFilms = films.filter(film => {
+        // Sprawdzamy, czy film ma jakikolwiek egzemplarz w filii pracownika
+        const hasEgzemplarzInAdminFilia = film.egzemplarze.some(e =>
+            String(e.filiaId) === String(adminFiliaId)
+        );
+
+        if (!hasEgzemplarzInAdminFilia) return false;
+
+        const matchesTitle = film.tytul.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesGenre = genreFilter ? film.gatunek.toLowerCase().includes(genreFilter.toLowerCase()) : true;
+        const matchesDirector = directorFilter ? film.rezyser.toLowerCase().includes(directorFilter.toLowerCase()) : true;
+        const matchesYear = yearFilter ? String(film.rokWydania).includes(yearFilter) : true;
+
+        return matchesTitle && matchesGenre && matchesDirector && matchesYear;
+    });
+
+    // Paginacja
+    const totalPages = Math.ceil(filteredFilms.length / filmsPerPage);
+    const indexOfLastFilm = currentPage * filmsPerPage;
+    const indexOfFirstFilm = indexOfLastFilm - filmsPerPage;
+    const currentFilms = filteredFilms.slice(indexOfFirstFilm, indexOfLastFilm);
+
+    const goToPage = (pageNumber) => {
+        if (pageNumber < 1 || pageNumber > totalPages) return;
+        setCurrentPage(pageNumber);
+        window.scrollTo(0, 0);
     };
 
-    const filteredFilms = films.filter(f =>
-        f.tytul.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Pobranie unikalnych filii do dropdowna
+    const branches = Array.from(new Set(films.flatMap(f => f.egzemplarze.map(e => e.filiaNazwa))));
 
     return (
-        <div className="admin-panel">
+        <div className="user-panel"> {/* Używamy tej samej klasy głównej */}
             <AdminNavbar setIsLoggedIn={setIsLoggedIn} />
-            <h2>🛠️ Zarządzanie Egzemplarzami</h2>
-            {message && <p className="admin-msg">{message}</p>}
+            {notification && <div className="notification">{notification}</div>}
 
-            <div className="admin-card">
-                <h3>Dodaj nowy egzemplarz</h3>
-                <form onSubmit={handleAdd}>
+            <h2>🏪 Wypożyczalnia Stacjonarna</h2>
 
-                    <label>Wyszukaj film:</label>
-                    <Select
-                        options={filmOptions}
-                        value={selectedFilm}
-                        onChange={setSelectedFilm}
-                        placeholder="Wpisz tytuł filmu..."
-                        isSearchable
-                        noOptionsMessage={() => "Nie znaleziono filmu"}
-                    />
-
-                    <label style={{ marginTop: '15px', display: 'block' }}>Wyszukaj filię:</label>
-                    <Select
-                        options={filiaOptions}
-                        value={selectedFilia}
-                        onChange={setSelectedFilia}
-                        placeholder="Wpisz nazwę filii..."
-                        isSearchable
-                        noOptionsMessage={() => "Nie znaleziono filii"}
-                    />
-
-                    <button type="submit" style={{ marginTop: '20px' }}>Dodaj do bazy</button>
-                </form>
+            {/* ===== Filtry ===== */}
+            <div className="filters-container">
+                <input
+                    type="text"
+                    placeholder="Szukaj filmu..."
+                    value={searchQuery}
+                    onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                />
+                <input
+                    type="text"
+                    placeholder="Gatunek"
+                    value={genreFilter}
+                    onChange={e => { setGenreFilter(e.target.value); setCurrentPage(1); }}
+                />
+                <input
+                    type="text"
+                    placeholder="Reżyser"
+                    value={directorFilter}
+                    onChange={e => { setDirectorFilter(e.target.value); setCurrentPage(1); }}
+                />
+                <input
+                    type="text"
+                    placeholder="Rok"
+                    value={yearFilter}
+                    onChange={e => { setYearFilter(e.target.value); setCurrentPage(1); }}
+                />
             </div>
 
-            <div className="inventory-list">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                    <h3>Aktualny inwentarz</h3>
-                    <input
-                        type="text"
-                        placeholder="Szukaj egzemplarzy po tytule filmu..."
-                        className="admin-search-input" // Używamy tej samej klasy co w AdminFilms
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ padding: '8px', width: '280px', borderRadius: '4px', border: '1px solid #ccc' }}
-                    />
+            {/* Paginacja góra */}
+            {totalPages > 1 && (
+                <div className="pagination">
+                    <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>◀ Poprzednia</button>
+                    <span> Strona {currentPage} z {totalPages} </span>
+                    <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>Następna ▶</button>
                 </div>
+            )}
 
-                {filteredFilms.length > 0 ? (
-                    filteredFilms.map(film => (
-                        <div key={film.idFilmu} className="admin-film-row">
-                            <strong>{film.tytul}</strong>
-                            <ul>
-                                {film.egzemplarze && film.egzemplarze.map(e => {
-                                    const isDeletable = e.status === 'DOSTEPNY';
-                                    return (
-                                        <li key={e.idEgzemplarza}>
-                                            <div className="egzemplarz-info">
-                                                <span>ID: {e.idEgzemplarza}</span> |
-                                                <span> {e.filiaNazwa || 'Baza główna'}</span> |
-                                                <span className={`status-badge ${e.status}`}>
-                                                {e.status}
-                                            </span>
-                                            </div>
-                                            <button
-                                                className={`del-btn ${!isDeletable ? 'disabled' : ''}`}
-                                                onClick={() => isDeletable && deleteEgzemplarz(e.idEgzemplarza)}
-                                                disabled={!isDeletable}
-                                            >
-                                                {isDeletable ? 'Usuń' : 'Zablokowane'}
-                                            </button>
+            <div className={`films-container ${loading ? 'loading' : 'loaded'}`}>
+                {loading ? (
+                    <div className="loader-container">
+                        <div className="loader"></div>
+                        <div className="loader-text">Ładowanie katalogu...</div>
+                    </div>
+                ) : (
+                    currentFilms.map((film, index) => (
+                        <div
+                            key={film.idFilmu}
+                            className="film-card"
+                            style={{ animationDelay: `${index * 0.05}s` }}
+                        >
+                            <h3>{film.tytul}</h3>
+                            <p><b>Gatunek:</b> {film.gatunek}</p>
+                            <p><b>Rok:</b> {film.rokWydania}</p>
+                            <p><b>Reżyser:</b> {film.rezyser}</p>
+                            <p className="opis">{film.opis}</p>
+
+                            <h4>Egzemplarze w Twojej filii:</h4>
+                            {film.egzemplarze
+                                .filter(e => String(e.filiaId) === String(adminFiliaId))
+                                .map(e => (
+                                    <ul key={e.idEgzemplarza} className="cart-list" style={{marginTop: '5px'}}>
+                                        <li style={{fontSize: '13px', padding: '8px'}}>
+                                            ID: {e.idEgzemplarza} | {e.filiaNazwa || 'Twoja Filia'} |
+                                            <span className={`status-badge ${e.status}`}> {e.status}</span>
+
+                                            {e.status === 'DOSTEPNY' && (
+                                                <button
+                                                    style={{width: 'auto', padding: '4px 8px', marginLeft: '10px'}}
+                                                    onClick={() => setSelectedEgzemplarz(e)}
+                                                >
+                                                    Wybierz ➡️
+                                                </button>
+                                            )}
                                         </li>
-                                    );
-                                })}
-                            </ul>
+                                    </ul>
+                                ))
+                            }
                         </div>
                     ))
-                ) : (
-                    <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>
-                        Nie znaleziono egzemplarzy dla wpisanego tytułu.
-                    </p>
                 )}
             </div>
+
+            {/* Paginacja dół */}
+            {totalPages > 1 && (
+                <div className="pagination" style={{marginTop: '30px'}}>
+                    <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>◀ Poprzednia</button>
+                    <span> Strona {currentPage} z {totalPages} </span>
+                    <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>Następna ▶</button>
+                </div>
+            )}
         </div>
     );
 }

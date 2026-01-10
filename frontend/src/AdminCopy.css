@@ -1,7 +1,7 @@
-/* AdminPanel.css */
+/* AdminCopy.css */
 
 .admin-panel {
-    padding: 100px 50px 50px 50px; /* Miejsce pod Navbar */
+    padding: 100px 50px 50px 50px;
     background: #f4f7f9;
     min-height: 100vh;
     font-family: 'Segoe UI', sans-serif;

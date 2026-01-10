@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,25 +45,22 @@ public class LoginController {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         // Przygotowanie pełnych danych klienta
-        Map<String, Object> response;
+        Map<String, Object> response = new HashMap<>();
+        response.put("idKonta", konto.getId());
+        response.put("login", konto.getLogin());
+        response.put("email", konto.getEmail());
+        response.put("rola", konto.getRola());
+
         if (konto.getKlient() != null) {
-            response = Map.of(
-                    "idKonta", konto.getId(),
-                    "rola", konto.getRola(),
-                    "idKlienta", konto.getKlient().getIdKlienta(),
-                    "imie", konto.getKlient().getImie(),
-                    "nazwisko", konto.getKlient().getNazwisko(),
-                    "adres", konto.getKlient().getAdres(),
-                    "login", konto.getLogin(),
-                    "email", konto.getEmail()
-            );
-        } else {
-            response = Map.of(
-                    "idKonta", konto.getId(),
-                    "rola", konto.getRola(),
-                    "login", konto.getLogin(),
-                    "email", konto.getEmail()
-            );
+            // Dane dla klienta
+            response.put("idKlienta", konto.getKlient().getIdKlienta());
+            response.put("imie", konto.getKlient().getImie());
+            response.put("nazwisko", konto.getKlient().getNazwisko());
+            response.put("adres", konto.getKlient().getAdres());
+        } else if (konto.getPracownik() != null) {
+            // Dane dla admina
+            response.put("idFilii", konto.getPracownik().getFilia().getIdFilii());
+            response.put("nazwaFilii", konto.getPracownik().getFilia().getNazwa());
         }
 
         return ResponseEntity.ok(response);

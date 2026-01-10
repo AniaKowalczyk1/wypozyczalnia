@@ -7,10 +7,11 @@ import Cart from './Cart';
 import Cennik from './Cennik';
 import MyRentals from './MyRentals';
 import MyFines from './MyFines';
-import AdminPanel from './AdminPanel';
+import AdminCopy from './AdminCopy';
 import MyReservations from './MyReservations';
 import AdminFilms from './AdminFilms';
 import UserProfile from './UserProfile';
+import AdminPanel from './AdminPanel';
 
 
 function App() {
@@ -114,12 +115,11 @@ function App() {
           }
         />
 
-
         <Route
           path="/admin"
             element={
               isLoggedIn && staffRoles.includes(getRole())
-                ? <Navigate to="/admin/egzemplarze" />
+                ? <AdminPanel setIsLoggedIn={setIsLoggedIn} />
                 : <Navigate to="/" />
             }
         />
@@ -128,7 +128,7 @@ function App() {
           path="/admin/egzemplarze"
             element={
               isLoggedIn && staffRoles.includes(getRole())
-                ? <AdminPanel setIsLoggedIn={setIsLoggedIn} />
+                ? <AdminCopy setIsLoggedIn={setIsLoggedIn} />
                 : <Navigate to="/" />
             }
         />

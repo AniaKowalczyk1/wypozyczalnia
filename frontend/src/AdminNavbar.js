@@ -19,6 +19,9 @@ function AdminNavbar({ setIsLoggedIn }) {
                     PANEL ZARZĄDZANIA
                 </span>
                 <button className="nav-btn active" onClick={() => navigate('/admin')}>
+                    Wypożycz stacjonarnie
+                </button>
+                <button className="nav-btn active" onClick={() => navigate('/admin/egzemplarze')}>
                     Egzemplarze
                 </button>
                 <button className="nav-btn active" onClick={() => navigate('/admin/films')}>
