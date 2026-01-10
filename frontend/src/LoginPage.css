@@ -87,3 +87,12 @@
 .login-footer a:hover {
   text-decoration: underline;
 }
+.login-form .password-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.login-form .password-wrapper input {
+  flex: 1;
+  height: 45px;
+}
