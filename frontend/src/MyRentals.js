@@ -38,7 +38,6 @@ function MyRentals({ setIsLoggedIn }) {
     fetchRentals();
   }, []);
 
-  if (loading) return <p>Ładowanie wypożyczeń...</p>;
   if (errorMessage) return <p>{errorMessage}</p>;
 
   const renderRentals = (rentals, showReturnDate = false) => (

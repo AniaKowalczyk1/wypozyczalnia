@@ -1,0 +1,126 @@
+/* ===== Panel profilu ===== */
+.profile-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 80px;
+  padding-bottom: 30px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f2f5;
+  min-height: 100vh;
+  color: #333;
+  box-sizing: border-box;
+}
+
+/* ===== Formularz ===== */
+.profile-form {
+  margin-top: 20px;
+  background-color: #ffffff;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Pojedyncze pole ===== */
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.profile-field label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #4facfe;
+  font-size: 14px;
+}
+
+.profile-field input {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.profile-field input:focus {
+  border-color: #4facfe;
+  box-shadow: 0 0 5px rgba(79,172,254,0.4);
+}
+
+/* ===== Komunikaty błędów ===== */
+.field-error {
+  color: #ff4d4f;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ===== Pola hasła ===== */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  flex: 1;
+  padding-right: 40px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Przycisk ===== */
+.save-btn {
+  margin-top: 10px;
+  padding: 12px 15px;
+  background: #4facfe;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background: #00c6ff;
+}
+
+.save-btn:disabled {
+  background: #a0cfff;
+  cursor: not-allowed;
+}
+
+/* ===== Powiadomienie ===== */
+.notification {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  opacity: 0;
+  animation: fadeInOut 4s forwards;
+  z-index: 1000;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(20px); }
+  10% { opacity: 1; transform: translateX(0); }
+  90% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(20px); }
+}

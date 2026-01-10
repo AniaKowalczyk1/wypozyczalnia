@@ -52,3 +52,26 @@
 .logout-btn:hover {
   background: #00FABB;
 }
+
+.profile-btn {
+  background: #ffffff33; /* lekko przezroczyste białe */
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.profile-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.profile-btn svg {
+  width: 24px;
+  height: 24px;
+}

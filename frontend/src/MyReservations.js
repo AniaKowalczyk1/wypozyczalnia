@@ -38,7 +38,6 @@ function MyReservations({ setIsLoggedIn }) {
     fetchReservations();
   }, []);
 
-  if (loading) return <p>Ładowanie rezerwacji...</p>;
   if (errorMessage) return <p>{errorMessage}</p>;
 
   const renderReservations = (reservations) => (

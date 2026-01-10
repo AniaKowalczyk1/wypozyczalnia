@@ -10,6 +10,7 @@ import MyFines from './MyFines';
 import AdminPanel from './AdminPanel';
 import MyReservations from './MyReservations';
 import AdminFilms from './AdminFilms';
+import UserProfile from './UserProfile';
 
 
 function App() {
@@ -103,6 +104,16 @@ function App() {
               : <Navigate to="/" />
           }
         />
+
+        <Route
+          path="/profile"
+          element={
+            isLoggedIn
+              ? <UserProfile setIsLoggedIn={setIsLoggedIn} login={localStorage.getItem('login')} />
+              : <Navigate to="/" />
+          }
+        />
+
 
         <Route
           path="/admin"
