@@ -10,6 +10,7 @@ function AdminPanel({ setIsLoggedIn }) {
     const [selectedFilm, setSelectedFilm] = useState(null);
     const [selectedFilia, setSelectedFilia] = useState(null);
     const [message, setMessage] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -87,6 +88,10 @@ function AdminPanel({ setIsLoggedIn }) {
         }
     };
 
+    const filteredFilms = films.filter(f =>
+        f.tytul.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="admin-panel">
             <AdminNavbar setIsLoggedIn={setIsLoggedIn} />
@@ -122,20 +127,52 @@ function AdminPanel({ setIsLoggedIn }) {
             </div>
 
             <div className="inventory-list">
-                <h3>Zarządzaj egzemplarzami</h3>
-                {films.map(film => (
-                    <div key={film.idFilmu} className="admin-film-row">
-                        <strong>{film.tytul}</strong>
-                        <ul>
-                            {film.egzemplarze.map(e => (
-                                <li key={e.idEgzemplarza}>
-                                    ID: {e.idEgzemplarza} | {e.filiaNazwa} | Status: {e.status}
-                                    <button className="del-btn" onClick={() => deleteEgzemplarz(e.idEgzemplarza)}>Usuń</button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                    <h3>Aktualny inwentarz</h3>
+                    <input
+                        type="text"
+                        placeholder="Szukaj egzemplarzy po tytule filmu..."
+                        className="admin-search-input" // Używamy tej samej klasy co w AdminFilms
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ padding: '8px', width: '280px', borderRadius: '4px', border: '1px solid #ccc' }}
+                    />
+                </div>
+
+                {filteredFilms.length > 0 ? (
+                    filteredFilms.map(film => (
+                        <div key={film.idFilmu} className="admin-film-row">
+                            <strong>{film.tytul}</strong>
+                            <ul>
+                                {film.egzemplarze && film.egzemplarze.map(e => {
+                                    const isDeletable = e.status === 'DOSTEPNY';
+                                    return (
+                                        <li key={e.idEgzemplarza}>
+                                            <div className="egzemplarz-info">
+                                                <span>ID: {e.idEgzemplarza}</span> |
+                                                <span> {e.filiaNazwa || 'Baza główna'}</span> |
+                                                <span className={`status-badge ${e.status}`}>
+                                                {e.status}
+                                            </span>
+                                            </div>
+                                            <button
+                                                className={`del-btn ${!isDeletable ? 'disabled' : ''}`}
+                                                onClick={() => isDeletable && deleteEgzemplarz(e.idEgzemplarza)}
+                                                disabled={!isDeletable}
+                                            >
+                                                {isDeletable ? 'Usuń' : 'Zablokowane'}
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ))
+                ) : (
+                    <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>
+                        Nie znaleziono egzemplarzy dla wpisanego tytułu.
+                    </p>
+                )}
             </div>
         </div>
     );

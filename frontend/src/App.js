@@ -9,6 +9,7 @@ import MyRentals from './MyRentals';
 import MyFines from './MyFines';
 import AdminPanel from './AdminPanel';
 import MyReservations from './MyReservations';
+import AdminFilms from './AdminFilms';
 
 
 function App() {
@@ -49,14 +50,6 @@ function App() {
           }
         />
 
-        <Route
-          path="/admin"
-            element={
-              isLoggedIn && staffRoles.includes(getRole())
-                ? <AdminPanel setIsLoggedIn={setIsLoggedIn} />
-                : <Navigate to="/" />
-            }
-        />
         <Route
           path="/panel"
           element={
@@ -111,7 +104,32 @@ function App() {
           }
         />
 
+        <Route
+          path="/admin"
+            element={
+              isLoggedIn && staffRoles.includes(getRole())
+                ? <Navigate to="/admin/egzemplarze" />
+                : <Navigate to="/" />
+            }
+        />
 
+        <Route
+          path="/admin/egzemplarze"
+            element={
+              isLoggedIn && staffRoles.includes(getRole())
+                ? <AdminPanel setIsLoggedIn={setIsLoggedIn} />
+                : <Navigate to="/" />
+            }
+        />
+
+        <Route
+          path="/admin/films"
+            element={
+              isLoggedIn && staffRoles.includes(getRole())
+                ? <AdminFilms setIsLoggedIn={setIsLoggedIn} />
+                : <Navigate to="/" />
+            }
+        />
       </Routes>
     </Router>
   );

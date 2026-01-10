@@ -132,6 +132,114 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+.del-btn.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.status-badge.DOSTEPNY { color: #27ae60; background: #eafaf1; }
+.status-badge.WYPOZYCZONY { color: #e67e22; background: #fef5e7; }
+.status-badge.REZERWACJA { color: #2980b9; background: #ebf5fb; }
+
+.admin-search-input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+/* Kontener formularza */
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Grupowanie etykiety z polem */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-left: 2px;
+}
+
+/* Styl dla inputów i textarea */
+.admin-form input,
+.admin-form textarea {
+    padding: 10px 12px;
+    border: 1px solid #dcdde1;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+}
+
+.admin-form input:focus,
+.admin-form textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Ustawienie gatunku i roku obok siebie */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Stylizacja textarea */
+.admin-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Przycisk dodawania */
+.add-btn {
+    background-color: #2ecc71;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+    font-size: 1rem;
+}
+
+.add-btn:hover {
+    background-color: #27ae60;
+}
+
+.admin-search-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.admin-search-input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
 /* Responsywność */
 @media (max-width: 768px) {
     .admin-panel {

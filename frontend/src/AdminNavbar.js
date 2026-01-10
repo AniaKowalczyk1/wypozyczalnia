@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Navbar.css'; // Możesz użyć tego samego CSS, bo układ jest podobny
+import './Navbar.css';
 
 function AdminNavbar({ setIsLoggedIn }) {
     const navigate = useNavigate();
@@ -13,21 +13,23 @@ function AdminNavbar({ setIsLoggedIn }) {
     };
 
     return (
-        <nav className="navbar" style={{ backgroundColor: '#2c3e50' }}> {/* Ciemniejszy kolor dla odróżnienia */}
+        <nav className="navbar" style={{ backgroundColor: '#2c3e50' }}>
             <div className="nav-left">
-        <span className="nav-brand" style={{ color: 'white', marginRight: '30px', fontWeight: 'bold' }}>
-          PANEL ZARZĄDZANIA
-        </span>
+                <span className="nav-brand" style={{ color: 'white', marginRight: '30px', fontWeight: 'bold' }}>
+                    PANEL ZARZĄDZANIA
+                </span>
                 <button className="nav-btn active" onClick={() => navigate('/admin')}>
                     Egzemplarze
                 </button>
-                {/* Tu w przyszłości dodasz np. <button>Użytkownicy</button> */}
+                <button className="nav-btn active" onClick={() => navigate('/admin/films')}>
+                    Filmy
+                </button>
             </div>
 
             <div className="nav-right">
-        <span style={{ color: '#ecf0f1', marginRight: '20px' }}>
-          Pracownik: <strong>{role}</strong>
-        </span>
+                <span style={{ color: '#ecf0f1', marginRight: '20px' }}>
+                    Pracownik: <strong>{role}</strong>
+                </span>
                 <button className="logout-btn" onClick={handleLogout} style={{ backgroundColor: '#e74c3c' }}>
                     Wyloguj
                 </button>
