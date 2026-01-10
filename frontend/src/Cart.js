@@ -106,7 +106,9 @@ function Cart({ setIsLoggedIn }) {
 
   // ===== Wypożyczenie po wpisaniu BLIK =====
   const confirmBlikAndWypozycz = async () => {
-    if (!blikCode || blikCode.length !== 6) {
+    // Walidacja kodu BLIK: dokładnie 6 cyfr
+    const blikPattern = /^\d{6}$/;
+    if (!blikPattern.test(blikCode)) {
       return showNotification('❌ Wprowadź prawidłowy 6-cyfrowy kod BLIK');
     }
 
@@ -142,6 +144,7 @@ function Cart({ setIsLoggedIn }) {
       showNotification('❌ Błąd przy wypożyczeniu / niepoprawny kod BLIK');
     }
   };
+
 
   return (
     <div className="cart-panel">
