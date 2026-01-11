@@ -55,36 +55,54 @@ public class KlientController {
         return response;
     }
 
-
     @GetMapping("/search")
-    public ResponseEntity<?> searchCustomer(
-            @RequestParam String imie,
-            @RequestParam String nazwisko) {
-
-        // Logowanie dla diagnostyki
-        System.out.println("Szukam klienta: " + imie + " " + nazwisko);
-
-        // Szukamy w bazie (z ignorowaniem wielkości liter)
+    public ResponseEntity<?> searchCustomer(@RequestParam String imie, @RequestParam String nazwisko) {
         List<Klient> klienci = klientRepo.findByImieIgnoreCaseAndNazwiskoIgnoreCase(imie.trim(), nazwisko.trim());
 
         if (klienci.isEmpty()) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", "Nie znaleziono klienta: " + imie + " " + nazwisko);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Nie znaleziono klienta"));
         }
 
-        // Pobieramy pierwszego znalezionego
         Klient k = klienci.get(0);
-
         Map<String, Object> details = new HashMap<>();
-        details.put("idKonta", k.getKonto().getId());
+        details.put("idKlienta", k.getIdKlienta()); // DODAJ TO!
+        details.put("idKonta", k.getKonto() != null ? k.getKonto().getId() : null);
         details.put("imie", k.getImie());
         details.put("nazwisko", k.getNazwisko());
-        details.put("email", k.getKonto().getEmail());
         details.put("adres", k.getAdres());
 
         return ResponseEntity.ok(details);
     }
+
+//    @GetMapping("/search")
+//    public ResponseEntity<?> searchCustomer(
+//            @RequestParam String imie,
+//            @RequestParam String nazwisko) {
+//
+//        // Logowanie dla diagnostyki
+//        System.out.println("Szukam klienta: " + imie + " " + nazwisko);
+//
+//        // Szukamy w bazie (z ignorowaniem wielkości liter)
+//        List<Klient> klienci = klientRepo.findByImieIgnoreCaseAndNazwiskoIgnoreCase(imie.trim(), nazwisko.trim());
+//
+//        if (klienci.isEmpty()) {
+//            Map<String, String> error = new HashMap<>();
+//            error.put("message", "Nie znaleziono klienta: " + imie + " " + nazwisko);
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+//        }
+//
+//        // Pobieramy pierwszego znalezionego
+//        Klient k = klienci.get(0);
+//
+//        Map<String, Object> details = new HashMap<>();
+//        details.put("idKonta", k.getKonto().getId());
+//        details.put("imie", k.getImie());
+//        details.put("nazwisko", k.getNazwisko());
+//        details.put("email", k.getKonto().getEmail());
+//        details.put("adres", k.getAdres());
+//
+//        return ResponseEntity.ok(details);
+//    }
 
     @PostMapping("/quick-register")
     @Transactional

@@ -120,10 +120,58 @@ public class WypozyczenieService {
         return 7.0 * numFilms;
     }
 
+    @Transactional
+    public void returnWypozyczenie(Long idWypozyczenia) {
+        Wypozyczenie wypozyczenie = wypozyczenieRepo.findById(idWypozyczenia)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono wypożyczenia"));
+
+        if (wypozyczenie.getDataZwrotu() != null) {
+            throw new RuntimeException("To wypożyczenie zostało już zwrócone");
+        }
+
+        LocalDate dzisiaj = LocalDate.now();
+        wypozyczenie.setDataZwrotu(dzisiaj);
+
+        // Zmieniamy status egzemplarzy na DOSTEPNY
+        for (Egzemplarz e : wypozyczenie.getEgzemplarze()) {
+            e.setStatus(StatusEgzemplarza.DOSTEPNY);
+            egzemplarzRepo.save(e);
+        }
+
+        // Opcjonalnie: Logika naliczania kary do bazy (jeśli spóźnione)
+        if (dzisiaj.isAfter(wypozyczenie.getTerminZwrotu())) {
+            long dniSpoznienia = java.time.temporal.ChronoUnit.DAYS.between(wypozyczenie.getTerminZwrotu(), dzisiaj);
+            Kara kara = new Kara();
+            kara.setDniSpoznienia((int) dniSpoznienia);
+            kara.setKwotaZaDzien(5.0); // np. 5 zł
+            kara.setKwotaCalkowita(dniSpoznienia * 5.0);
+            kara.setOplacone(false);
+            kara.setWypozyczenie(wypozyczenie);
+            wypozyczenie.setKara(kara);
+        }
+
+        wypozyczenieRepo.save(wypozyczenie);
+    }
 
 
+    @Transactional
+    public void returnSingleEgzemplarz(Long idWypozyczenia, Long idEgzemplarza, Long idFiliiPracownika) {
+        Wypozyczenie wypozyczenie = wypozyczenieRepo.findById(idWypozyczenia)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono wypożyczenia"));
 
+        Egzemplarz egzemplarz = wypozyczenie.getEgzemplarze().stream()
+                .filter(e -> e.getIdEgzemplarza().equals(idEgzemplarza))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Egzemplarz nie należy do wypożyczenia"));
 
+        // BLOKADA: Sprawdzamy czy ID filii egzemplarza zgadza się z ID filii pracownika
+        if (!egzemplarz.getFilia().getIdFilii().equals(idFiliiPracownika)) {
+            throw new RuntimeException("Błąd: Egzemplarz należy do innej filii. Zwrot musi nastąpić w miejscu wypożyczenia.");
+        }
+
+        egzemplarz.setStatus(StatusEgzemplarza.DOSTEPNY);
+        // ... reszta logiki ...
+    }
 }
 
 

@@ -12,7 +12,7 @@ import MyReservations from './MyReservations';
 import AdminFilms from './AdminFilms';
 import UserProfile from './UserProfile';
 import AdminPanel from './AdminPanel';
-
+import AdminReturns from './AdminReturns';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('role'));
@@ -120,6 +120,15 @@ function App() {
             element={
               isLoggedIn && staffRoles.includes(getRole())
                 ? <AdminPanel setIsLoggedIn={setIsLoggedIn} />
+                : <Navigate to="/" />
+            }
+        />
+
+        <Route
+          path="/admin/zwroty"
+            element={
+              isLoggedIn && staffRoles.includes(getRole())
+                ? <AdminReturns setIsLoggedIn={setIsLoggedIn} />
                 : <Navigate to="/" />
             }
         />
