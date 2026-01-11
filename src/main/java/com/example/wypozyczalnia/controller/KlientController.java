@@ -3,12 +3,17 @@ package com.example.wypozyczalnia.controller;
 import com.example.wypozyczalnia.model.Klient;
 import com.example.wypozyczalnia.model.Konto;
 import com.example.wypozyczalnia.repository.KontoRepository;
+import com.example.wypozyczalnia.repository.KlientRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -16,10 +21,12 @@ import java.util.Map;
 public class KlientController {
 
     private final KontoRepository kontoRepo;
+    private final KlientRepository klientRepo;
     private static final Logger logger = LoggerFactory.getLogger(KlientController.class);
 
-    public KlientController(KontoRepository kontoRepo) {
+    public KlientController(KontoRepository kontoRepo, KlientRepository klientRepo) {
         this.kontoRepo = kontoRepo;
+        this.klientRepo = klientRepo;
     }
 
     @GetMapping("/me")
@@ -46,6 +53,78 @@ public class KlientController {
         response.put("adres", klient.getAdres());
 
         return response;
+    }
+
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchCustomer(
+            @RequestParam String imie,
+            @RequestParam String nazwisko) {
+
+        // Logowanie dla diagnostyki
+        System.out.println("Szukam klienta: " + imie + " " + nazwisko);
+
+        // Szukamy w bazie (z ignorowaniem wielkości liter)
+        List<Klient> klienci = klientRepo.findByImieIgnoreCaseAndNazwiskoIgnoreCase(imie.trim(), nazwisko.trim());
+
+        if (klienci.isEmpty()) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Nie znaleziono klienta: " + imie + " " + nazwisko);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+
+        // Pobieramy pierwszego znalezionego
+        Klient k = klienci.get(0);
+
+        Map<String, Object> details = new HashMap<>();
+        details.put("idKonta", k.getKonto().getId());
+        details.put("imie", k.getImie());
+        details.put("nazwisko", k.getNazwisko());
+        details.put("email", k.getKonto().getEmail());
+        details.put("adres", k.getAdres());
+
+        return ResponseEntity.ok(details);
+    }
+
+    @PostMapping("/quick-register")
+    @Transactional
+    public ResponseEntity<?> quickRegister(@RequestBody Map<String, String> data) {
+        String imie = data.get("imie");
+        String nazwisko = data.get("nazwisko");
+        String adres = data.get("adres");
+
+        // Tworzymy nowy profil klienta (jeszcze nie zapisujemy)
+        Klient nowyKlient = new Klient();
+        nowyKlient.setImie(imie);
+        nowyKlient.setNazwisko(nazwisko);
+        nowyKlient.setAdres(adres);
+
+        nowyKlient = klientRepo.save(nowyKlient);
+
+        // Tworzymy konto
+        Konto noweKonto = new Konto();
+        noweKonto.setLogin((imie + "." + nazwisko + (int)(Math.random()*100)).toLowerCase());
+        noweKonto.setHaslo("start123");
+        noweKonto.setRola("klient");
+        noweKonto.setEmail(noweKonto.getLogin() + "@vhs.pl");
+
+        // Łączymy relacje
+        noweKonto.setKlient(nowyKlient);
+
+        // Zapisujemy konto
+        noweKonto = kontoRepo.save(noweKonto);
+
+        // Wymuszamy zapis, aby baza nadała ID i powiązała rekordy
+        klientRepo.flush();
+        kontoRepo.flush();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("idKonta", noweKonto.getId());
+        response.put("imie", imie);
+        response.put("nazwisko", nazwisko);
+        response.put("adres", adres);
+
+        return ResponseEntity.ok(response);
     }
 
 }
