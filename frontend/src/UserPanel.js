@@ -5,6 +5,7 @@ import './UserPanel.css';
 
 function UserPanel({ setIsLoggedIn }) {
   const [films, setFilms] = useState([]);
+  const [topFilms, setTopFilms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
 
@@ -23,17 +24,31 @@ function UserPanel({ setIsLoggedIn }) {
   const fetchFilms = async () => {
     try {
       const res = await axios.get('http://localhost:8080/api/films');
-      setFilms(res.data);
+      setFilms(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
       showNotification('❌ Błąd pobierania filmów');
-    } finally {
-      setLoading(false);
     }
   };
 
+  // ===== Pobranie Top 3 =====
+  const fetchTopFilms = async () => {
+    try {
+      const res = await axios.get('http://localhost:8080/api/films/popular');
+      setTopFilms(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ===== useEffect=====
   useEffect(() => {
-    fetchFilms();
+    const fetchAll = async () => {
+      setLoading(true);
+      await Promise.all([fetchFilms(), fetchTopFilms()]);
+      setLoading(false);
+    };
+    fetchAll();
   }, []);
 
   // ===== Powiadomienia =====
@@ -42,7 +57,7 @@ function UserPanel({ setIsLoggedIn }) {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // ===== Dodanie egzemplarza do koszyka =====
+  // ===== Dodanie do koszyka =====
   const addToCart = (egzemplarz, filmTytul) => {
     if (egzemplarz.status !== 'DOSTEPNY') {
       return showNotification(`Egzemplarz "${filmTytul}" jest niedostępny ❌`);
@@ -54,40 +69,22 @@ function UserPanel({ setIsLoggedIn }) {
       return showNotification(`Egzemplarz filmu "${filmTytul}" już w koszyku ❌`);
     }
 
-    const newCart = [
-      ...cart,
-      {
-        ...egzemplarz,
-        filmTytul
-      }
-    ];
-
+    const newCart = [...cart, { ...egzemplarz, filmTytul }];
     localStorage.setItem('cart', JSON.stringify(newCart));
     showNotification(`🎬 Film "${filmTytul}" dodany do koszyka (Filia: ${egzemplarz.filiaNazwa}) ✅`);
   };
 
-  // ===== Lista unikalnych filii i statusów do dropdownów =====
-  const branches = Array.from(
-    new Set(films.flatMap(f => f.egzemplarze.map(e => e.filiaNazwa)))
-  );
-  const statuses = Array.from(
-    new Set(films.flatMap(f => f.egzemplarze.map(e => e.status)))
-  );
+  // ===== Dropdowny =====
+  const branches = Array.from(new Set(films.flatMap(f => f.egzemplarze.map(e => e.filiaNazwa))));
+  const statuses = Array.from(new Set(films.flatMap(f => f.egzemplarze.map(e => e.status))));
 
   // ===== Filtracja =====
   const filteredFilms = films.filter(film => {
     const matchesTitle = film.tytul.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesGenre = genreFilter
-      ? film.gatunek.toLowerCase().includes(genreFilter.toLowerCase())
-      : true;
-    const matchesDirector = directorFilter
-      ? film.rezyser.toLowerCase().includes(directorFilter.toLowerCase())
-      : true;
-    const matchesYear = yearFilter
-      ? String(film.rokWydania).includes(yearFilter)
-      : true;
+    const matchesGenre = genreFilter ? film.gatunek.toLowerCase().includes(genreFilter.toLowerCase()) : true;
+    const matchesDirector = directorFilter ? film.rezyser.toLowerCase().includes(directorFilter.toLowerCase()) : true;
+    const matchesYear = yearFilter ? String(film.rokWydania).includes(yearFilter) : true;
 
-    // Film pojawia się tylko, jeśli ma przynajmniej jeden egzemplarz pasujący do filii i statusu
     const matchesBranchAndStatus = film.egzemplarze.some(e =>
       (!branchFilter || e.filiaNazwa === branchFilter) &&
       (!statusFilter || e.status === statusFilter)
@@ -95,7 +92,6 @@ function UserPanel({ setIsLoggedIn }) {
 
     return matchesTitle && matchesGenre && matchesDirector && matchesYear && matchesBranchAndStatus;
   });
-
 
   // ===== Paginacja =====
   const totalPages = Math.ceil(filteredFilms.length / filmsPerPage);
@@ -121,52 +117,59 @@ function UserPanel({ setIsLoggedIn }) {
       <Navbar setIsLoggedIn={setIsLoggedIn} />
       {notification && <div className="notification">{notification}</div>}
 
+      {/* ===== Top 3 ===== */}
+      <div className="top-films-section">
+        <h2>🔥 Top 3 filmy z największej liczby wypożyczeń</h2>
+        <p className="description">Najpopularniejsze filmy w naszej wypożyczalni - sprawdź, które filmy cieszą się największym zainteresowaniem!</p>
+
+        <div className="top-films-container">
+          {topFilms.map((film, index) => (
+            <div key={film.idFilmu} className="top-film-card-wrapper">
+              <div className="top-film-card">
+                {/* Front */}
+                <div className="top-film-card-front">
+                  <span className="rank">#{index + 1}</span>
+                  <h3>{film.tytul}</h3>
+                  <p><b>Gatunek:</b> {film.gatunek}</p>
+                  <p><b>Rok:</b> {film.rokWydania}</p>
+                  <p><b>Reżyser:</b> {film.rezyser}</p>
+                </div>
+                {/* Back */}
+                <div className="top-film-card-back">
+                  <h3>Opis filmu:</h3>
+                  <p>{film.opis}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+
+
+
       <h2>🎬 Lista filmów</h2>
 
       {/* ===== Filtry ===== */}
       <div className="filters-container">
-        <input
-          type="text"
-          placeholder="Szukaj filmu..."
-          value={searchQuery}
-          onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-        />
-        <input
-          type="text"
-          placeholder="Gatunek"
-          value={genreFilter}
-          onChange={e => { setGenreFilter(e.target.value); setCurrentPage(1); }}
-        />
-        <input
-          type="text"
-          placeholder="Reżyser"
-          value={directorFilter}
-          onChange={e => { setDirectorFilter(e.target.value); setCurrentPage(1); }}
-        />
-        <input
-          type="text"
-          placeholder="Rok"
-          value={yearFilter}
-          onChange={e => { setYearFilter(e.target.value); setCurrentPage(1); }}
-        />
+        <input type="text" placeholder="Szukaj filmu..." value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
+        <input type="text" placeholder="Gatunek" value={genreFilter} onChange={e => { setGenreFilter(e.target.value); setCurrentPage(1); }} />
+        <input type="text" placeholder="Reżyser" value={directorFilter} onChange={e => { setDirectorFilter(e.target.value); setCurrentPage(1); }} />
+        <input type="text" placeholder="Rok" value={yearFilter} onChange={e => { setYearFilter(e.target.value); setCurrentPage(1); }} />
         <select value={branchFilter} onChange={e => { setBranchFilter(e.target.value); setCurrentPage(1); }}>
           <option value="">Wszystkie filie</option>
-          {branches.map(branch => (
-            <option key={branch} value={branch}>{branch}</option>
-          ))}
+          {branches.map(branch => <option key={branch} value={branch}>{branch}</option>)}
         </select>
         <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
           <option value="">Wszystkie statusy</option>
-          {statuses.map(status => (
-            <option key={status} value={status}>{status}</option>
-          ))}
+          {statuses.map(status => <option key={status} value={status}>{status}</option>)}
         </select>
       </div>
 
-      {/* Paginacja nad filmami */}
+      {/* ===== Paginacja nad filmami ===== */}
       {totalPages > 1 && <Pagination />}
 
-      {/* ===== Lista filmów z animacją ===== */}
+      {/* ===== Lista filmów ===== */}
       <div className={`films-container ${loading ? 'loading' : 'loaded'}`}>
         {loading ? (
           <div className="loader-container">
@@ -177,11 +180,7 @@ function UserPanel({ setIsLoggedIn }) {
           <p>Brak wyników dla podanych filtrów</p>
         ) : (
           currentFilms.map((film, index) => (
-            <div
-              key={film.idFilmu}
-              className="film-card"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
+            <div key={film.idFilmu} className="film-card" style={{ animationDelay: `${index * 0.1}s` }}>
               <h3>{film.tytul}</h3>
               <p><b>Gatunek:</b> {film.gatunek}</p>
               <p><b>Rok:</b> {film.rokWydania}</p>
@@ -190,26 +189,21 @@ function UserPanel({ setIsLoggedIn }) {
 
               <h4>Egzemplarze:</h4>
               {film.egzemplarze
-                .filter(e => (!branchFilter || e.filiaNazwa === branchFilter) &&
-                             (!statusFilter || e.status === statusFilter))
+                .filter(e => (!branchFilter || e.filiaNazwa === branchFilter) && (!statusFilter || e.status === statusFilter))
                 .map(e => (
                   <ul key={e.idEgzemplarza}>
                     <li>
                       {film.tytul} | Status: {e.status} | Filia: {e.filiaNazwa}
-                      {e.status === 'DOSTEPNY' && (
-                        <button onClick={() => addToCart(e, film.tytul)}>➕ Dodaj do koszyka</button>
-                      )}
+                      {e.status === 'DOSTEPNY' && <button onClick={() => addToCart(e, film.tytul)}>➕ Dodaj do koszyka</button>}
                     </li>
                   </ul>
-                ))
-              }
+                ))}
             </div>
           ))
         )}
       </div>
 
-
-      {/* Paginacja pod filmami */}
+      {/* ===== Paginacja pod filmami ===== */}
       {totalPages > 1 && <Pagination />}
     </div>
   );

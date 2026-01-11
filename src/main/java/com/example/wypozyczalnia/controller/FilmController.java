@@ -21,4 +21,10 @@ public class FilmController {
     public List<FilmAvailabilityDto> getAllFilms() {
         return filmService.getAllFilmsWithStatus();
     }
+
+    @GetMapping("/popular")
+    public List<FilmAvailabilityDto> getTopPopularFilms() {
+        return filmService.getTop3PopularFilms();
+    }
+
 }
