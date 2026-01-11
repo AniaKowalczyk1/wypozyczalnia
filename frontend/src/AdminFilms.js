@@ -62,7 +62,7 @@ function AdminFilms({ setIsLoggedIn }) {
             {message && <p className="admin-msg">{message}</p>}
 
             <div className="admin-card">
-                <h3>🎬 Dodaj nowy tytuł do bazy</h3>
+                <h3>Dodaj nowy tytuł do bazy</h3>
                 <form onSubmit={handleAddFilm} className="admin-form">
                     <div className="form-group">
                         <label>Tytuł filmu</label>

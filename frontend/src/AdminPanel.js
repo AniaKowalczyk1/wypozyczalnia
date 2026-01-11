@@ -10,6 +10,14 @@ function AdminPanel({ setIsLoggedIn }) {
     const [loading, setLoading] = useState(true);
     const [notification, setNotification] = useState(null);
     const [selectedEgzemplarz, setSelectedEgzemplarz] = useState(null);
+    const [adminCart, setAdminCart] = useState([]);
+    const [isFinalizing, setIsFinalizing] = useState(false);
+    const [customerLogin, setCustomerLogin] = useState('');
+    const [foundCustomer, setFoundCustomer] = useState(null);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [address, setAddress] = useState('');
+    const [showAddForm, setShowAddForm] = useState(false);
 
     // Paginacja
     const [currentPage, setCurrentPage] = useState(1);
@@ -71,8 +79,104 @@ function AdminPanel({ setIsLoggedIn }) {
         window.scrollTo(0, 0);
     };
 
-    // Pobranie unikalnych filii do dropdowna
-    const branches = Array.from(new Set(films.flatMap(f => f.egzemplarze.map(e => e.filiaNazwa))));
+    const addToAdminCart = (egzemplarz, filmTytul) => {
+        if (adminCart.find(item => item.idEgzemplarza === egzemplarz.idEgzemplarza)) {
+            return showNotification(`❌ Ten egzemplarz jest już wybrany.`);
+        }
+        setAdminCart([...adminCart, { ...egzemplarz, filmTytul }]);
+        showNotification(`➕ Dodano: ${filmTytul}`);
+    };
+
+    const removeFromAdminCart = (idEgzemplarza) => {
+        // Tworzymy nową listę bez elementu o danym ID
+        setAdminCart(adminCart.filter(item => item.idEgzemplarza !== idEgzemplarza));
+        showNotification("➖ Usunięto film z listy.");
+    };
+
+    const handleCheckCustomer = async () => {
+        const searchImie = firstName.trim();
+        const searchNazwisko = lastName.trim();
+
+        if (!searchImie || !searchNazwisko) {
+            showNotification("⚠️ Wpisz imię i nazwisko.");
+            return;
+        }
+
+        try {
+            const res = await axios.get(`http://localhost:8080/api/klient/search`, {
+                params: { imie: searchImie, nazwisko: searchNazwisko }
+            });
+            setFoundCustomer(res.data);
+            setShowAddForm(false); // Jeśli znaleziono, ukrywamy formularz rejestracji
+            showNotification("✅ Znaleziono klienta!");
+        } catch (err) {
+            setFoundCustomer(null);
+            if (err.response && err.response.status === 404) {
+                setShowAddForm(true); // <--- TUTAJ: Włączamy formularz rejestracji
+                showNotification("🔍 Nie znaleziono klienta. Możesz go teraz zarejestrować.");
+            } else {
+                showNotification("❌ Błąd połączenia z bazą.");
+            }
+        }
+    };
+
+    const handleQuickRegister = async () => {
+        try {
+            const res = await axios.post('http://localhost:8080/api/klient/quick-register', {
+                imie: firstName,
+                nazwisko: lastName,
+                adres: address
+            });
+            setFoundCustomer(res.data);
+            setShowAddForm(false);
+            showNotification("✅ Nowy klient został zarejestrowany!");
+        } catch (err) {
+            showNotification("❌ Błąd rejestracji.");
+        }
+    };
+
+    const finalizeRental = async () => {
+        if (!foundCustomer || adminCart.length === 0) return;
+
+        // Ustawiamy termin zwrotu (np. za 30 dni)
+        const termin = new Date();
+        termin.setDate(termin.getDate() + 30);
+        const terminString = termin.toISOString().split('T')[0];
+
+        try {
+            await axios.post('http://localhost:8080/api/wypozyczenia', {
+                idKonta: foundCustomer.idKonta,
+                idFilii: parseInt(adminFiliaId),
+                terminZwrotu: terminString,
+                egzemplarzeId: adminCart.map(item => item.idEgzemplarza),
+                dostawa: 'filia',
+                adresDostawy: null
+            });
+
+            showNotification("🎉 Wypożyczenie zakończone sukcesem!");
+
+            // Czyścimy wszystko po sukcesie
+            setAdminCart([]);
+            setIsFinalizing(false);
+            setFoundCustomer(null);
+            setCustomerLogin('');
+
+            // Odświeżamy listę filmów, aby zaktualizować statusy egzemplarzy
+            const res = await axios.get('http://localhost:8080/api/films');
+            setFilms(res.data);
+
+        } catch (err) {
+            console.error(err);
+            showNotification("❌ Błąd podczas finalizacji wypożyczenia.");
+        }
+    };
+
+    const calculatePrice = (numFilms) => {
+        if (numFilms === 1) return 10.0;
+        if (numFilms >= 2 && numFilms <= 3) return 9.0 * numFilms;
+        if (numFilms >= 4 && numFilms <= 6) return 8.0 * numFilms;
+        return 7.0 * numFilms;
+    };
 
     return (
         <div className="user-panel"> {/* Używamy tej samej klasy głównej */}
@@ -108,6 +212,59 @@ function AdminPanel({ setIsLoggedIn }) {
                     onChange={e => { setYearFilter(e.target.value); setCurrentPage(1); }}
                 />
             </div>
+
+            {adminCart.length > 0 && !isFinalizing && (
+                <div className="admin-card" style={{
+                    position: 'sticky',
+                    top: '80px',
+                    zIndex: 100,
+                    border: '2px solid #4facfe',
+                    background: 'white',
+                    padding: '15px',
+                    marginBottom: '20px',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3>🛒 Sesja wypożyczania ({adminCart.length})</h3>
+                        <button
+                            className="add-btn"
+                            style={{ width: 'auto', padding: '10px 20px' }}
+                            onClick={() => setIsFinalizing(true)}
+                        >
+                            Dalej: Dane klienta ➡️
+                        </button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
+                        {adminCart.map(item => (
+                            <span key={item.idEgzemplarza} className="status-badge DOSTEPNY" style={{
+                                padding: '5px 12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                    {item.filmTytul} (ID: {item.idEgzemplarza})
+
+                                {/* PRZYCISK USUWANIA (X) */}
+                                <button
+                                    onClick={() => removeFromAdminCart(item.idEgzemplarza)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#e74c3c',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold',
+                                        fontSize: '16px',
+                                        padding: '0 2px'
+                                    }}
+                                    title="Usuń z listy"
+                                >
+                        ✕
+                    </button>
+                </span>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Paginacja góra */}
             {totalPages > 1 && (
@@ -149,9 +306,9 @@ function AdminPanel({ setIsLoggedIn }) {
                                             {e.status === 'DOSTEPNY' && (
                                                 <button
                                                     style={{width: 'auto', padding: '4px 8px', marginLeft: '10px'}}
-                                                    onClick={() => setSelectedEgzemplarz(e)}
+                                                    onClick={() => addToAdminCart(e, film.tytul)}
                                                 >
-                                                    Wybierz ➡️
+                                                    Wybierz
                                                 </button>
                                             )}
                                         </li>
@@ -163,6 +320,140 @@ function AdminPanel({ setIsLoggedIn }) {
                 )}
             </div>
 
+            {isFinalizing && (
+                <div className="blik-modal">
+                    <div className="blik-modal-content" style={{ maxWidth: '500px' }}>
+                        <h3>👤 Finalizacja wypożyczenia</h3>
+                        <div style={{ textAlign: 'left', marginBottom: '20px' }}>
+                            <p><strong>Wybrane filmy:</strong></p>
+                            <ul>
+                                {adminCart.map(item => (
+                                    <li key={item.idEgzemplarza} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                        <span>{item.filmTytul} (ID: {item.idEgzemplarza})</span>
+                                        <button
+                                            onClick={() => removeFromAdminCart(item.idEgzemplarza)}
+                                            style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}
+                                        >
+                                            Usuń
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                            <p>Łączna kwota: <strong>{calculatePrice(adminCart.length).toFixed(2)} zł</strong></p>
+                        </div>
+
+                        <hr />
+
+                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
+                            <label>Dane klienta:</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '5px' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Imię"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    style={{
+                                        width: '100%',         // Pełna szerokość
+                                        padding: '10px',
+                                        borderRadius: '5px',
+                                        border: '1px solid #ccc',
+                                        boxSizing: 'border-box' // Gwarantuje, że padding nie zwiększy szerokości
+                                    }}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Nazwisko"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    style={{
+                                        width: '100%',         // Pełna szerokość
+                                        padding: '10px',
+                                        borderRadius: '5px',
+                                        border: '1px solid #ccc',
+                                        boxSizing: 'border-box'
+                                    }}
+                                />
+                                <button
+                                    className="nav-btn"
+                                    style={{
+                                        height: '40px',
+                                        width: '100%',
+                                        backgroundColor: '#3498db',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '5px',
+                                        fontWeight: 'bold',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0'
+                                    }}
+                                    onClick={handleCheckCustomer}
+                                >
+                                    Szukaj klienta 🔍
+                                </button>
+                            </div>
+                        </div>
+
+                        {foundCustomer && (
+                            <div className="client-data-panel" style={{ textAlign: 'left', background: '#eafaf1' }}>
+                                <p>✅ <strong>{foundCustomer.imie} {foundCustomer.nazwisko}</strong></p>
+                                <p>Adres: {foundCustomer.adres}</p>
+                                <button className="checkout-btn" onClick={finalizeRental}>
+                                    Potwierdź i Wypożycz
+                                </button>
+                            </div>
+                        )}
+
+                        {showAddForm && (
+                            <div style={{ marginTop: '15px', padding: '15px', background: '#fdf2e9', borderRadius: '5px' }}>
+                                <p style={{ color: '#e67e22', fontWeight: 'bold' }}>⚠️ Klienta nie ma w bazie. Dodaj adres, aby go zarejestrować:</p>
+                                <input
+                                    type="text"
+                                    placeholder="Adres zamieszkania klienta..."
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    style={{ width: '100%', padding: '10px', marginTop: '10px', boxSizing: 'border-box' }}
+                                />
+                                <button
+                                    className="add-btn"
+                                    style={{ width: '100%', marginTop: '10px', backgroundColor: '#27ae60' }}
+                                    onClick={handleQuickRegister}
+                                >
+                                    Zapisz i kontynuuj 💾
+                                </button>
+                            </div>
+                        )}
+
+                        <button
+                            className="remove-btn"
+                            style={{
+                                height: '40px',
+                                width: '100%',
+                                backgroundColor: '#95a5a6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0', // Wyrównujemy do lewej krawędzi (brak marginesu)
+                                marginTop: '10px' // Tylko odstęp od góry
+                            }}
+                            onClick={() => {
+                                setIsFinalizing(false);
+                                setFoundCustomer(null);
+                            }}
+                        >
+                            ⬅️ Powrót do katalogu
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Paginacja dół */}
             {totalPages > 1 && (
                 <div className="pagination" style={{marginTop: '30px'}}>
@@ -172,6 +463,8 @@ function AdminPanel({ setIsLoggedIn }) {
                 </div>
             )}
         </div>
+
+
     );
 }
 
