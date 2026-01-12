@@ -18,8 +18,21 @@ function MyFines({ setIsLoggedIn }) {
       }
 
       try {
-        const res = await axios.get(`http://localhost:8080/api/wypozyczenia/kary/${idKlienta}`);
-        setKary(Array.isArray(res.data) ? res.data : []);
+        // endpoint pasujący do KaraServiceView
+        const res = await axios.get(`http://localhost:8080/api/kary/klient/${idKlienta}`);
+
+        // Zapewnienie domyślnych wartości
+        const karyData = Array.isArray(res.data)
+          ? res.data.map(k => ({
+              ...k,
+              dniSpoznienia: k.dniSpoznienia || 0,
+              kwotaCalkowita: k.kwotaCalkowita || 0,
+              oplacone: k.oplacone || false,
+              tytul: k.tytul || '-',
+            }))
+          : [];
+
+        setKary(karyData);
       } catch (error) {
         console.error(error);
         setErrorMessage('Błąd podczas pobierania kar.');
@@ -29,7 +42,13 @@ function MyFines({ setIsLoggedIn }) {
     };
 
     fetchKary();
-  }, []);
+  }, []); // uruchamia się przy pierwszym renderze komponentu
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pl-PL');
+  };
 
   if (loading) return <p>Ładowanie kar...</p>;
   if (errorMessage) return <p>{errorMessage}</p>;
@@ -57,8 +76,8 @@ function MyFines({ setIsLoggedIn }) {
           ) : (
             kary.map((k, index) => (
               <tr key={index} className={k.oplacone ? 'paid' : 'unpaid'}>
-                <td>{k.tytul || '-'}</td>
-                <td>{k.terminZwrotu || '-'}</td>
+                <td>{k.tytul}</td>
+                <td>{formatDate(k.terminZwrotu)}</td>
                 <td>{k.dniSpoznienia}</td>
                 <td>{k.kwotaCalkowita.toFixed(2)} zł</td>
                 <td>{k.oplacone ? 'Tak' : 'Nie'}</td>

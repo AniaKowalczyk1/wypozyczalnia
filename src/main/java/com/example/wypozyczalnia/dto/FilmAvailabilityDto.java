@@ -10,9 +10,10 @@ public class FilmAvailabilityDto {
     private String rezyser;
     private String opis;
     private List<EgzemplarzDto> egzemplarze;
+    private String plakat;
 
     public FilmAvailabilityDto(Long idFilmu, String tytul, String gatunek, int rokWydania,
-                               String rezyser, String opis, List<EgzemplarzDto> egzemplarze) {
+                               String rezyser, String opis, List<EgzemplarzDto> egzemplarze, String plakat) {
         this.idFilmu = idFilmu;
         this.tytul = tytul;
         this.gatunek = gatunek;
@@ -20,6 +21,7 @@ public class FilmAvailabilityDto {
         this.rezyser = rezyser;
         this.opis = opis;
         this.egzemplarze = egzemplarze;
+        this.plakat = plakat;
     }
 
     // Gettery i settery
@@ -43,4 +45,8 @@ public class FilmAvailabilityDto {
 
     public List<EgzemplarzDto> getEgzemplarze() { return egzemplarze; }
     public void setEgzemplarze(List<EgzemplarzDto> egzemplarze) { this.egzemplarze = egzemplarze; }
+
+    public String getPlakat() { return plakat; }
+    public void setPlakat(String plakat) { this.plakat = plakat; }
+
 }

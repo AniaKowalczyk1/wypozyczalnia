@@ -401,3 +401,18 @@
   from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+.film-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.top-film-card-front img {
+  width: 100px;
+  height: 150px;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}

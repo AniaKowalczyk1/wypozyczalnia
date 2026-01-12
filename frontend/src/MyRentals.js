@@ -40,12 +40,14 @@ function MyRentals({ setIsLoggedIn }) {
 
   if (errorMessage) return <p>{errorMessage}</p>;
 
-  const renderRentals = (rentals, showReturnDate = false) => (
+
+
+  const renderRentals = (rentals) => (
     <table className="rentals-table">
       <thead>
         <tr>
           <th>Data wypożyczenia</th>
-          {showReturnDate && <th>Data zwrotu</th>}
+          <th>Termin zwrotu</th>
           <th>Filia</th>
           <th>Egzemplarz</th>
         </tr>
@@ -53,17 +55,15 @@ function MyRentals({ setIsLoggedIn }) {
       <tbody>
         {rentals.length === 0 ? (
           <tr>
-            <td colSpan={showReturnDate ? 4 : 3} className="empty-message">
-              Brak wypożyczeń
-            </td>
+            <td colSpan={4} className="empty-message">Brak wypożyczeń</td>
           </tr>
         ) : (
           rentals.flatMap(rental => {
             if (!rental.egzemplarze || rental.egzemplarze.length === 0) {
               return (
                 <tr key={rental.idWypozyczenia}>
-                  <td>{rental.dataWypozyczenia}</td>
-                  {showReturnDate && <td>{rental.dataZwrotu || '-'}</td>}
+                  <td>{rental.dataWypozyczenia || '-'}</td>
+                  <td>{rental.terminZwrotu || '-'}</td>
                   <td>-</td>
                   <td>-</td>
                 </tr>
@@ -73,7 +73,7 @@ function MyRentals({ setIsLoggedIn }) {
             return rental.egzemplarze.map((e, index) => (
               <tr key={`${rental.idWypozyczenia}-${index}`}>
                 <td>{index === 0 ? rental.dataWypozyczenia : ''}</td>
-                {showReturnDate && <td>{index === 0 ? rental.dataZwrotu || '-' : ''}</td>}
+                <td>{index === 0 ? rental.terminZwrotu : ''}</td>
                 <td className="filia-column">{e.filiaNazwa || '-'}</td>
                 <td className="egzemplarz-column">{e.filmTytul || '-'}</td>
               </tr>
@@ -83,6 +83,7 @@ function MyRentals({ setIsLoggedIn }) {
       </tbody>
     </table>
   );
+
 
   return (
     <div className="rentals-panel">

@@ -2,9 +2,7 @@ package com.example.wypozyczalnia.service;
 
 import com.example.wypozyczalnia.dto.EgzemplarzDto;
 import com.example.wypozyczalnia.dto.FilmAvailabilityDto;
-import com.example.wypozyczalnia.model.Egzemplarz;
 import com.example.wypozyczalnia.model.Film;
-import com.example.wypozyczalnia.model.StatusEgzemplarza;
 import com.example.wypozyczalnia.repository.FilmRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,21 +20,21 @@ public class FilmService {
         this.filmRepository = filmRepository;
     }
 
+    // ===== Wszystkie filmy =====
     public List<FilmAvailabilityDto> getAllFilmsWithStatus() {
         return filmRepository.findAll().stream()
                 .map(film -> {
-                    // Mapujemy egzemplarze do DTO
                     List<EgzemplarzDto> egzemplarzeDto = film.getEgzemplarze().stream()
                             .map(e -> new EgzemplarzDto(
                                     e.getIdEgzemplarza(),
                                     e.getStatus().name(),
                                     e.getFilia() != null ? e.getFilia().getIdFilii() : null,
                                     e.getFilia() != null ? e.getFilia().getNazwa() : "—",
-                                    film.getTytul() // <-- teraz OK, bo konstruktor ma 5 parametrów
+                                    film.getTytul()
                             ))
-
                             .collect(Collectors.toList());
 
+                    // Konstruktor z plakatem
                     return new FilmAvailabilityDto(
                             film.getIdFilmu(),
                             film.getTytul(),
@@ -44,12 +42,14 @@ public class FilmService {
                             film.getRokWydania(),
                             film.getRezyser(),
                             film.getOpis(),
-                            egzemplarzeDto
+                            egzemplarzeDto,
+                            film.getPlakat() // plakat
                     );
                 })
                 .collect(Collectors.toList());
     }
 
+    // ===== Top 3 popularne filmy =====
     public List<FilmAvailabilityDto> getTop3PopularFilms() {
 
         Pageable pageable = PageRequest.of(0, 3);
@@ -67,6 +67,7 @@ public class FilmService {
                             ))
                             .toList();
 
+                    // Konstruktor z plakatem
                     return new FilmAvailabilityDto(
                             film.getIdFilmu(),
                             film.getTytul(),
@@ -74,11 +75,10 @@ public class FilmService {
                             film.getRokWydania(),
                             film.getRezyser(),
                             film.getOpis(),
-                            egzemplarzeDto
+                            egzemplarzeDto,
+                            film.getPlakat() // dodanie plakatu
                     );
                 })
                 .toList();
     }
-
-
 }

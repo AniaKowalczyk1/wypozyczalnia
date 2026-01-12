@@ -16,6 +16,7 @@ public class Film {
     private int rokWydania;
     private String rezyser;
     private String opis;
+    private String plakat;
 
     // ===== relacje z egzemplarzami =====
     @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
@@ -39,6 +40,10 @@ public class Film {
 
     public String getOpis() { return opis; }
     public void setOpis(String opis) { this.opis = opis; }
+
+    public String getPlakat() {return plakat;}
+    public void setPlakat(String plakat) {this.plakat = plakat;}
+
 
     public List<Egzemplarz> getEgzemplarze() { return egzemplarze; }
     public void setEgzemplarze(List<Egzemplarz> egzemplarze) { this.egzemplarze = egzemplarze; }

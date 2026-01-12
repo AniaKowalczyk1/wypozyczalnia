@@ -18,7 +18,7 @@ function UserPanel({ setIsLoggedIn }) {
   const [directorFilter, setDirectorFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
   const [branchFilter, setBranchFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('DOSTEPNY');
 
   // ===== Pobranie filmów =====
   const fetchFilms = async () => {
@@ -41,7 +41,7 @@ function UserPanel({ setIsLoggedIn }) {
     }
   };
 
-  // ===== useEffect=====
+  // ===== useEffect =====
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
@@ -85,6 +85,7 @@ function UserPanel({ setIsLoggedIn }) {
     const matchesDirector = directorFilter ? film.rezyser.toLowerCase().includes(directorFilter.toLowerCase()) : true;
     const matchesYear = yearFilter ? String(film.rokWydania).includes(yearFilter) : true;
 
+    // Filtrujemy tylko filmy, które mają egzemplarze w wybranej filii/statusie
     const matchesBranchAndStatus = film.egzemplarze.some(e =>
       (!branchFilter || e.filiaNazwa === branchFilter) &&
       (!statusFilter || e.status === statusFilter)
@@ -129,6 +130,7 @@ function UserPanel({ setIsLoggedIn }) {
                 {/* Front */}
                 <div className="top-film-card-front">
                   <span className="rank">#{index + 1}</span>
+                  {film.plakat && <img src={film.plakat} alt={film.tytul} />}
                   <h3>{film.tytul}</h3>
                   <p><b>Gatunek:</b> {film.gatunek}</p>
                   <p><b>Rok:</b> {film.rokWydania}</p>
@@ -145,9 +147,6 @@ function UserPanel({ setIsLoggedIn }) {
         </div>
       </div>
 
-
-
-
       <h2>🎬 Lista filmów</h2>
 
       {/* ===== Filtry ===== */}
@@ -161,8 +160,12 @@ function UserPanel({ setIsLoggedIn }) {
           {branches.map(branch => <option key={branch} value={branch}>{branch}</option>)}
         </select>
         <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
+          <option value="DOSTEPNY">DOSTEPNY</option>
           <option value="">Wszystkie statusy</option>
-          {statuses.map(status => <option key={status} value={status}>{status}</option>)}
+          {statuses
+            .filter(status => status !== 'DOSTEPNY') // żeby nie powtarzać
+            .map(status => <option key={status} value={status}>{status}</option>)
+          }
         </select>
       </div>
 
@@ -181,6 +184,7 @@ function UserPanel({ setIsLoggedIn }) {
         ) : (
           currentFilms.map((film, index) => (
             <div key={film.idFilmu} className="film-card" style={{ animationDelay: `${index * 0.1}s` }}>
+              {film.plakat && <img src={film.plakat} alt={film.tytul} />}
               <h3>{film.tytul}</h3>
               <p><b>Gatunek:</b> {film.gatunek}</p>
               <p><b>Rok:</b> {film.rokWydania}</p>
@@ -188,16 +192,45 @@ function UserPanel({ setIsLoggedIn }) {
               <p className="opis">{film.opis}</p>
 
               <h4>Egzemplarze:</h4>
-              {film.egzemplarze
-                .filter(e => (!branchFilter || e.filiaNazwa === branchFilter) && (!statusFilter || e.status === statusFilter))
-                .map(e => (
-                  <ul key={e.idEgzemplarza}>
-                    <li>
-                      {film.tytul} | Status: {e.status} | Filia: {e.filiaNazwa}
-                      {e.status === 'DOSTEPNY' && <button onClick={() => addToCart(e, film.tytul)}>➕ Dodaj do koszyka</button>}
-                    </li>
-                  </ul>
-                ))}
+              {(() => {
+                // Filtrujemy egzemplarze po filii i statusie
+                const filteredCopies = film.egzemplarze.filter(e =>
+                  (!branchFilter || e.filiaNazwa === branchFilter) &&
+                  (!statusFilter || e.status === statusFilter)
+                );
+
+                if (filteredCopies.length === 0) return <p>Brak egzemplarzy</p>;
+
+                // Grupujemy po filii
+                const grouped = {};
+                filteredCopies.forEach(e => {
+                  const key = e.filiaNazwa;
+                  if (!grouped[key]) grouped[key] = [];
+                  grouped[key].push(e);
+                });
+
+                return Object.entries(grouped).map(([filia, egzList]) => {
+                  // Liczymy ile egzemplarzy w tej filii ma status DOSTEPNY
+                  const availableCount = egzList.filter(e => e.status === 'DOSTEPNY').length;
+
+                  return (
+                    <div key={filia} style={{ marginBottom: '8px' }}>
+                      <b>{filia}</b>: {egzList.length} egzemplarz(y)
+                      {statusFilter === 'DOSTEPNY' && availableCount > 0 && (
+                        <button
+                          onClick={() => addToCart(egzList.find(e => e.status === 'DOSTEPNY'), film.tytul)}
+                          style={{ marginLeft: '10px' }}
+                        >
+                          ➕ Dodaj jeden do koszyka
+                        </button>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
+
+
+
             </div>
           ))
         )}
