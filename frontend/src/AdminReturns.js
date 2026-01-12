@@ -1,150 +1,143 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import AdminNavbar from './AdminNavbar';
+import './UserPanel.css';
 
 function AdminReturns({ setIsLoggedIn }) {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [foundCustomer, setFoundCustomer] = useState(null);
     const [activeRentals, setActiveRentals] = useState([]);
-    const [message, setMessage] = useState('');
     const [notification, setNotification] = useState(null);
+    const [showFineModal, setShowFineModal] = useState(false);
+    const [currentFineData, setCurrentFineData] = useState(null);
+    const [pendingRentalId, setPendingRentalId] = useState(null);
 
     const adminFiliaId = localStorage.getItem('idFilii');
-    const searchCustomer = async () => {
-        try {
-            const res = await axios.get(`http://localhost:8080/api/klient/search`, {
-                params: { imie: firstName, nazwisko: lastName }
-            });
-
-            const customer = res.data;
-            setFoundCustomer(customer);
-
-            // KLUCZ: Używamy idKlienta, bo tak szuka WypozyczenieRepository
-            if (customer.idKlienta) {
-                const rentalsRes = await axios.get(`http://localhost:8080/api/wypozyczenia/active/${customer.idKlienta}`);
-                setActiveRentals(rentalsRes.data);
-            }
-            setMessage('');
-        } catch (err) {
-            setFoundCustomer(null);
-            setActiveRentals([]);
-            setMessage('❌ Nie znaleziono klienta lub błąd pobierania danych.');
-        }
-    };
-
-    const fetchActiveRentals = async (idKonta) => {
-        try {
-            // Zakładamy, że w foundCustomer masz idKlienta
-            const res = await axios.get(`http://localhost:8080/api/wypozyczenia/active/${foundCustomer?.idKlienta || idKonta}`);
-            setActiveRentals(res.data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-
-    const handleSingleReturn = async (idWyp, idEgz) => {
-        const adminFiliaId = localStorage.getItem('idFilii');
-        try {
-            await axios.post(`http://localhost:8080/api/admin/wypozyczenia/return-item`, null, {
-                params: {
-                    idWypozyczenia: idWyp,
-                    idEgzemplarza: idEgz,
-                    idFiliiPracownika: adminFiliaId
-                }
-            });
-            showNotification("✅ Film został pomyślnie zwrócony."); // Zamiast setMessage
-            fetchActiveRentals(foundCustomer.idKlienta);
-        } catch (err) {
-            showNotification("❌ Błąd podczas zwrotu filmu."); // Zamiast setMessage
-        }
-    };
 
     const showNotification = (message) => {
         setNotification(message);
         setTimeout(() => setNotification(null), 3000);
     };
 
-    const renderItems = () => {
-        const adminFiliaId = localStorage.getItem('idFilii');
+    const searchCustomer = async () => {
+        try {
+            const res = await axios.get(`http://localhost:8080/api/klient/search`, {
+                params: { imie: firstName, nazwisko: lastName }
+            });
+            const customer = res.data;
+            setFoundCustomer(customer);
 
-        const allBorrowedItems = activeRentals.flatMap(rental =>
-            rental.egzemplarze
-                .filter(e => e.status !== 'DOSTEPNY')
-                .map(egzemplarz => ({
-                    ...egzemplarz,
-                    idWypozyczenia: rental.idWypozyczenia,
-                    terminZwrotu: rental.terminZwrotu
-                }))
-        );
+            if (customer.idKlienta) {
+                fetchActiveRentals(customer.idKlienta);
+            }
+            showNotification("✅ Znaleziono klienta!");
+        } catch (err) {
+            setFoundCustomer(null);
+            setActiveRentals([]);
+            showNotification("🔍 Nie znaleziono klienta.");
+        }
+    };
 
-        if (allBorrowedItems.length === 0) {
-            return <p style={{textAlign: 'center', marginTop: '30px', color: '#666'}}>Brak aktywnych wypożyczeń dla tego klienta.</p>;
+    const fetchActiveRentals = async (idKlienta) => {
+        try {
+            const res = await axios.get(`http://localhost:8080/api/wypozyczenia/active/${idKlienta}`);
+            setActiveRentals(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleFullReturn = async (idWypozyczenia) => {
+        try {
+            const fineRes = await axios.get(`http://localhost:8080/api/admin/wypozyczenia/${idWypozyczenia}/kara`);
+
+            if (fineRes.data.kwota && fineRes.data.kwota > 0) {
+                // Zapisujemy dane i otwieramy modal zamiast window.confirm
+                setCurrentFineData(fineRes.data.kwota);
+                setPendingRentalId(idWypozyczenia);
+                setShowFineModal(true);
+            } else {
+                // Jeśli nie ma kary, od razu wykonujemy zwrot
+                executeReturn(idWypozyczenia);
+            }
+        } catch (err) {
+            showNotification('❌ Błąd podczas sprawdzania kary.');
+        }
+    };
+
+    const executeReturn = async (idWyp) => {
+        try {
+            await axios.post(`http://localhost:8080/api/admin/wypozyczenia/return/${idWyp}`);
+            showNotification('✅ Zamówienie zostało zwrócone!');
+            setShowFineModal(false); // Zamknij modal jeśli był otwarty
+            fetchActiveRentals(foundCustomer.idKlienta);
+        } catch (err) {
+            showNotification('❌ Błąd podczas procesowania zwrotu.');
+        }
+    };
+
+    const renderRentals = () => {
+        if (activeRentals.length === 0) {
+            return <p style={{textAlign: 'center', marginTop: '30px', color: '#666'}}>Brak aktywnych wypożyczeń.</p>;
         }
 
         return (
             <div style={{ marginTop: '30px' }}>
-                <h3 style={{ marginBottom: '20px', color: '#2c3e50' }}>Filmy do zwrotu:</h3>
+                <h3 style={{ marginBottom: '20px', color: '#2c3e50' }}>Aktywne zamówienia klienta:</h3>
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
                     gap: '20px'
                 }}>
-                    {allBorrowedItems.map((item) => {
-                        const isMyBranch = String(item.filiaId) === String(adminFiliaId);
-                        const isOverdue = new Date(item.terminZwrotu) < new Date();
+                    {activeRentals.map((rental) => {
+                        // Sprawdzamy czy wypożyczenie było w tej samej filii co pracownik
+                        const isMyBranch = String(rental.egzemplarze[0]?.filiaId) === String(adminFiliaId);
+                        const isOverdue = new Date(rental.terminZwrotu) < new Date();
 
                         return (
-                            <div key={item.idEgzemplarza} style={{
+                            <div key={rental.idWypozyczenia} className="film-card" style={{
                                 background: 'white',
-                                borderRadius: '12px',
-                                padding: '20px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                                borderLeft: isOverdue ? '5px solid #e74c3c' : '5px solid #2ecc71',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                opacity: isMyBranch ? 1 : 0.7
+                                borderLeft: isOverdue ? '5px solid #e74c3c' : '5px solid #3498db',
+                                animation: 'fadeInUpCard 0.5s forwards'
                             }}>
-                                <div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                        <span style={{ fontSize: '12px', color: '#7f8c8d', fontWeight: 'bold' }}>ID: #{item.idEgzemplarza}</span>
-                                        <span style={{
-                                            fontSize: '11px',
-                                            padding: '2px 8px',
-                                            borderRadius: '10px',
-                                            background: isMyBranch ? '#eafaf1' : '#f0f3f4',
-                                            color: isMyBranch ? '#27ae60' : '#7f8c8d'
-                                        }}>
-                                        {item.filiaNazwa}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                    <span style={{ fontWeight: 'bold', color: '#7f8c8d' }}>Zamówienie #{rental.idWypozyczenia}</span>
+                                    <span className="status-badge" style={{ background: '#f0f3f4', color: '#2c3e50' }}>
+                                        {rental.dataWypozyczenia}
                                     </span>
-                                    </div>
-                                    <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50', fontSize: '18px' }}>{item.filmTytul}</h4>
-                                    <p style={{ fontSize: '14px', margin: '5px 0', color: isOverdue ? '#e74c3c' : '#2c3e50' }}>
-                                        <strong>Termin:</strong> {item.terminZwrotu} {isOverdue && '⚠️'}
-                                    </p>
                                 </div>
 
-                                <div style={{ marginTop: '15px', textAlign: 'right' }}>
+                                <div style={{ margin: '10px 0' }}>
+                                    <p style={{ fontSize: '14px', marginBottom: '5px' }}><strong>Filmy w paczce:</strong></p>
+                                    <ul style={{ paddingLeft: '20px', fontSize: '13px', color: '#555' }}>
+                                        {rental.egzemplarze.map(e => (
+                                            <li key={e.idEgzemplarza}>{e.filmTytul}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <p style={{ fontSize: '14px', color: isOverdue ? '#e74c3c' : '#2c3e50' }}>
+                                    <strong>Termin zwrotu:</strong> {rental.terminZwrotu} {isOverdue && '⚠️'}
+                                </p>
+                                {isOverdue && (
+                                    <p style={{ color: '#e74c3c', fontWeight: 'bold', fontSize: '13px' }}>
+                                        Wymagana weryfikacja kary finansowej!
+                                    </p>
+                                )}
+                                <div style={{ marginTop: '15px' }}>
                                     {isMyBranch ? (
                                         <button
                                             className="add-btn"
-                                            style={{
-                                                backgroundColor: '#2ecc71',
-                                                width: '100%',
-                                                padding: '10px',
-                                                fontSize: '14px',
-                                                cursor: 'pointer'
-                                            }}
-                                            onClick={() => handleSingleReturn(item.idWypozyczenia, item.idEgzemplarza)}
+                                            style={{ backgroundColor: '#3498db', width: '100%' }}
+                                            onClick={() => handleFullReturn(rental.idWypozyczenia)}
                                         >
-                                            Przyjmij zwrot 📥
+                                            Zwróć wszystkie filmy 📥
                                         </button>
                                     ) : (
-                                        <div style={{ fontSize: '12px', color: '#95a5a6', fontStyle: 'italic', padding: '10px' }}>
-                                            Zwrot tylko w: {item.filiaNazwa}
-                                        </div>
+                                        <p style={{ fontSize: '12px', color: '#95a5a6', textAlign: 'center', fontStyle: 'italic' }}>
+                                            Wypożyczone w innej filii
+                                        </p>
                                     )}
                                 </div>
                             </div>
@@ -155,18 +148,12 @@ function AdminReturns({ setIsLoggedIn }) {
         );
     };
 
-    // Pomocnicza funkcja do koloru daty
-    const styleDate = (dateStr) => {
-        return new Date(dateStr) < new Date() ? '#e74c3c' : 'inherit';
-    };
-
     return (
         <div className="admin-panel">
             <AdminNavbar setIsLoggedIn={setIsLoggedIn} />
-            {/* TO DODAJEMY: Powiadomienie pojawiające się na górze */}
             {notification && <div className="notification">{notification}</div>}
 
-            <h2>🔄 Zarządzanie Zwrotami</h2>
+            <h2>🔄 Zwroty Zamówień</h2>
 
             <div className="admin-card">
                 <h3>Wyszukaj klienta</h3>
@@ -177,10 +164,41 @@ function AdminReturns({ setIsLoggedIn }) {
                 </div>
             </div>
 
-            {foundCustomer && renderItems()}
+            {/* Modal Kary */}
+            {showFineModal && (
+                <div className="modal-overlay">
+                    <div className="admin-card modal-content" style={{ maxWidth: '400px', textAlign: 'center' }}>
+                        <h3 style={{ color: '#e74c3c' }}>⚠️ Naliczono karę</h3>
+                        <p style={{ fontSize: '18px', margin: '20px 0' }}>
+                            Termin zwrotu został przekroczony. <br/>
+                            <strong>Kwota do pobrania: {currentFineData?.toFixed(2)} zł</strong>
+                        </p>
+                        <p style={{ fontSize: '14px', color: '#7f8c8d', marginBottom: '20px' }}>
+                            Czy potwierdzasz otrzymanie wpłaty od klienta?
+                        </p>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                            <button
+                                className="add-btn"
+                                style={{ backgroundColor: '#2ecc71' }}
+                                onClick={() => executeReturn(pendingRentalId)}
+                            >
+                                Potwierdzam wpłatę i zwrot
+                            </button>
+                            <button
+                                className="add-btn"
+                                style={{ backgroundColor: '#95a5a6' }}
+                                onClick={() => setShowFineModal(false)}
+                            >
+                                Anuluj
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {foundCustomer && renderRentals()}
         </div>
     );
-
 }
 
 export default AdminReturns;

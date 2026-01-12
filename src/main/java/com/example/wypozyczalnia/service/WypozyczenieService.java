@@ -37,6 +37,7 @@ public class WypozyczenieService {
         this.klientRepo = klientRepo;
         this.platnoscRepo = platnoscRepo;
     }
+
     @Transactional
     public Wypozyczenie createWypozyczenie(WypozyczenieRequest request) {
         System.out.println("===== Nowe wypożyczenie =====");
@@ -132,13 +133,11 @@ public class WypozyczenieService {
         LocalDate dzisiaj = LocalDate.now();
         wypozyczenie.setDataZwrotu(dzisiaj);
 
-        // Zmieniamy status egzemplarzy na DOSTEPNY
         for (Egzemplarz e : wypozyczenie.getEgzemplarze()) {
             e.setStatus(StatusEgzemplarza.DOSTEPNY);
             egzemplarzRepo.save(e);
         }
 
-        // Opcjonalnie: Logika naliczania kary do bazy (jeśli spóźnione)
         if (dzisiaj.isAfter(wypozyczenie.getTerminZwrotu())) {
             long dniSpoznienia = java.time.temporal.ChronoUnit.DAYS.between(wypozyczenie.getTerminZwrotu(), dzisiaj);
             Kara kara = new Kara();
@@ -153,24 +152,15 @@ public class WypozyczenieService {
         wypozyczenieRepo.save(wypozyczenie);
     }
 
+    public double obliczAktualnaKare(Wypozyczenie w) {
+        if (w.getTerminZwrotu() == null) return 0.0;
 
-    @Transactional
-    public void returnSingleEgzemplarz(Long idWypozyczenia, Long idEgzemplarza, Long idFiliiPracownika) {
-        Wypozyczenie wypozyczenie = wypozyczenieRepo.findById(idWypozyczenia)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono wypożyczenia"));
-
-        Egzemplarz egzemplarz = wypozyczenie.getEgzemplarze().stream()
-                .filter(e -> e.getIdEgzemplarza().equals(idEgzemplarza))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Egzemplarz nie należy do wypożyczenia"));
-
-        // BLOKADA: Sprawdzamy czy ID filii egzemplarza zgadza się z ID filii pracownika
-        if (!egzemplarz.getFilia().getIdFilii().equals(idFiliiPracownika)) {
-            throw new RuntimeException("Błąd: Egzemplarz należy do innej filii. Zwrot musi nastąpić w miejscu wypożyczenia.");
+        LocalDate dzisiaj = LocalDate.now();
+        if (dzisiaj.isAfter(w.getTerminZwrotu())) {
+            long dni = java.time.temporal.ChronoUnit.DAYS.between(w.getTerminZwrotu(), dzisiaj);
+            return dni * 5.0;
         }
-
-        egzemplarz.setStatus(StatusEgzemplarza.DOSTEPNY);
-        // ... reszta logiki ...
+        return 0.0;
     }
 }
 

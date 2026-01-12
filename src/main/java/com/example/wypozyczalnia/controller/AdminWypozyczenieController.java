@@ -1,11 +1,15 @@
 package com.example.wypozyczalnia.controller;
 
+import com.example.wypozyczalnia.model.Kara;
+import com.example.wypozyczalnia.model.Wypozyczenie;
 import com.example.wypozyczalnia.repository.WypozyczenieRepository;
+import com.example.wypozyczalnia.repository.KaraRepository;
 import com.example.wypozyczalnia.service.WypozyczenieService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/wypozyczenia")
@@ -14,10 +18,12 @@ public class AdminWypozyczenieController {
 
     private final WypozyczenieService wypozyczenieService;
     private final WypozyczenieRepository wypozyczenieRepo;
+    private final KaraRepository karaRepo;
 
-    public AdminWypozyczenieController(WypozyczenieService wypozyczenieService, WypozyczenieRepository wypozyczenieRepo) {
+    public AdminWypozyczenieController(WypozyczenieService wypozyczenieService, WypozyczenieRepository wypozyczenieRepo, KaraRepository karaRepo) {
         this.wypozyczenieService = wypozyczenieService;
         this.wypozyczenieRepo = wypozyczenieRepo;
+        this.karaRepo = karaRepo;
     }
 
     // Pobierz wszystkie AKTYWNE wypożyczenia konkretnego klienta
@@ -36,17 +42,25 @@ public class AdminWypozyczenieController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @GetMapping("/{idWypozyczenia}/kara")
+    public ResponseEntity<?> checkFine(@PathVariable Long idWypozyczenia) {
+        Wypozyczenie w = wypozyczenieRepo.findById(idWypozyczenia)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono wypożyczenia"));
 
-    @PostMapping("/return-item")
-    public ResponseEntity<?> returnSingleItem(
-            @RequestParam Long idWypozyczenia,
-            @RequestParam Long idEgzemplarza,
-            @RequestParam Long idFiliiPracownika) { // DODAJEMY TEN PARAMETR
-        try {
-            wypozyczenieService.returnSingleEgzemplarz(idWypozyczenia, idEgzemplarza, idFiliiPracownika);
-            return ResponseEntity.ok(Map.of("message", "Egzemplarz zwrócony"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        // Sprawdź czy kara już istnieje w bazie
+        Optional<Kara> karaDb = karaRepo.findByWypozyczenieIdWypozyczenia(idWypozyczenia);
+
+        if (karaDb.isPresent() && !karaDb.get().getOplacone()) {
+            return ResponseEntity.ok(Map.of("kwota", karaDb.get().getKwotaCalkowita()));
         }
+
+        // Jeśli nie ma w bazie, oblicz ją
+        double wyliczonaKwota = wypozyczenieService.obliczAktualnaKare(w);
+
+        if (wyliczonaKwota > 0) {
+            return ResponseEntity.ok(Map.of("kwota", wyliczonaKwota));
+        }
+
+        return ResponseEntity.ok(Map.of("brakKary", true));
     }
 }
