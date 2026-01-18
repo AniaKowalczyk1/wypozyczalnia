@@ -5,6 +5,7 @@ import RegisterPage from './RegisterPage';
 import UserPanel from './UserPanel';
 import Cart from './Cart';
 import Cennik from './Cennik';
+import ContactPage from './ContactPage';
 import MyRentals from './MyRentals';
 import MyFines from './MyFines';
 import AdminCopy from './AdminCopy';
@@ -89,6 +90,15 @@ function App() {
         />
 
         <Route
+          path="/my-reservations"
+          element={
+            isLoggedIn
+              ? <MyReservations setIsLoggedIn={setIsLoggedIn} />
+              : <Navigate to="/" />
+          }
+        />
+
+        <Route
           path="/my-fines"
           element={
             isLoggedIn
@@ -98,12 +108,8 @@ function App() {
         />
 
         <Route
-          path="/my-reservations"
-          element={
-            isLoggedIn
-              ? <MyReservations setIsLoggedIn={setIsLoggedIn} />
-              : <Navigate to="/" />
-          }
+          path="/contact"
+          element={<ContactPage setIsLoggedIn={setIsLoggedIn} />}
         />
 
         <Route

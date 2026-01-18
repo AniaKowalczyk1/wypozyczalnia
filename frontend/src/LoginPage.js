@@ -13,7 +13,7 @@ function LoginPage({ setIsLoggedIn }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/login', { login, haslo });
+      const response = await axios.post('http://localhost:8081/api/login', { login, haslo });
       const data = response.data;
 
       // Zapis wszystkich danych klienta w localStorage

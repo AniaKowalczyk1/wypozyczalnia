@@ -18,8 +18,8 @@ function AdminCopy({ setIsLoggedIn }) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const resFilms = await axios.get('http://localhost:8080/api/films');
-                const resFilie = await axios.get('http://localhost:8080/api/filie');
+                const resFilms = await axios.get('http://localhost:8082/api/films');
+                const resFilie = await axios.get('http://localhost:8082/api/filie');
 
                 console.log("Dane filii z API:", resFilie.data);
 
@@ -62,12 +62,12 @@ function AdminCopy({ setIsLoggedIn }) {
         }
 
         try {
-            await axios.post('http://localhost:8080/api/admin/egzemplarze', {
+            await axios.post('http://localhost:8082/api/admin/egzemplarze', {
                 idFilmu: selectedFilm.value,
                 idFilii: adminFiliaId
             });
             setMessage('✅ Dodano egzemplarz do Twojej filii!');
-            const res = await axios.get('http://localhost:8080/api/films');
+            const res = await axios.get('http://localhost:8082/api/films');
             setFilms(res.data);
         } catch (err) {
             setMessage('❌ Błąd podczas dodawania');
@@ -77,10 +77,10 @@ function AdminCopy({ setIsLoggedIn }) {
     const deleteEgzemplarz = async (id) => {
         if (!window.confirm("Czy na pewno chcesz usunąć ten egzemplarz?")) return;
         try {
-            await axios.delete(`http://localhost:8080/api/admin/egzemplarze/${id}`);
+            await axios.delete(`http://localhost:8082/api/admin/egzemplarze/${id}`);
             setMessage('🗑️ Usunięto egzemplarz');
             // Odśwież listę filmów po usunięciu
-            const res = await axios.get('http://localhost:8080/api/films');
+            const res = await axios.get('http://localhost:8082/api/films');
             setFilms(res.data);
         } catch (err) {
             setMessage('❌ Błąd podczas usuwania');

@@ -63,37 +63,41 @@ function Cart({ setIsLoggedIn }) {
 
   // ===== Rezerwacja / Wypożyczenie w filii =====
   const reserveOrCheckout = async () => {
-    if (!selectedFiliaId) return showNotification('❌ Wybierz filię');
+    if (!selectedFiliaId) {
+      return showNotification('❌ Wybierz filię');
+    }
+
     const filiaGroup = groupedByFilia[selectedFiliaId];
 
-    // Jeśli dostawa do domu, od razu otwieramy modal BLIK
     if (dostawa === 'dom') {
       setShowBlikModal(true);
       return;
     }
 
-    // ===== Rezerwacja w filii =====
-    const toReserve = filiaGroup.items.filter(e => e.status !== 'ZAREZERWOWANY');
+    const toReserve = filiaGroup.items.filter(
+      e => e.status !== 'ZAREZERWOWANY'
+    );
+
     if (toReserve.length === 0) {
       showNotification('❌ Wszystkie egzemplarze w tej filii są już zarezerwowane');
       return;
     }
 
     try {
-      // nowy endpoint dla rezerwacji
       await axios.post('http://localhost:8080/api/rezerwacje', {
-        idKonta,
-        egzemplarzeId: toReserve.map(f => f.idEgzemplarza)
+        idKonta: Number(idKonta),
+        idFilii: Number(selectedFiliaId),
+        egzemplarzeId: toReserve.map(e => e.idEgzemplarza)
       });
 
       showNotification(`✅ Egzemplarze w filii "${filiaGroup.filiaNazwa}" zostały zarezerwowane`);
 
-      // Usuwamy z koszyka te egzemplarze
-      const newCart = cart.filter(f => f.filiaId !== Number(selectedFiliaId));
+      const newCart = cart.filter(
+        f => f.filiaId !== Number(selectedFiliaId)
+      );
       setCart(newCart);
       localStorage.setItem('cart', JSON.stringify(newCart));
 
-      // Reset wyboru filii
       setSelectedFiliaId(null);
       setDostawa('filia');
 
@@ -102,6 +106,7 @@ function Cart({ setIsLoggedIn }) {
       showNotification('❌ Błąd przy rezerwacji egzemplarzy');
     }
   };
+
 
 
   // ===== Wypożyczenie po wpisaniu BLIK =====

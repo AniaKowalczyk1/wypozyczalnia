@@ -17,16 +17,27 @@ public class RezerwacjaViewController {
 
     @GetMapping("/all/{idKlienta}")
     public List<RezerwacjaViewDTO> getAllReservations(@PathVariable Long idKlienta) {
+        // najpierw aktualizacja statusu przeterminowanych
+        rezerwacjaViewService.checkAndMarkExpired();
+
         return rezerwacjaViewService.getAllReservations(idKlienta);
     }
 
     @GetMapping("/active/{idKlienta}")
     public List<RezerwacjaViewDTO> getActiveReservations(@PathVariable Long idKlienta) {
+        rezerwacjaViewService.checkAndMarkExpired();
         return rezerwacjaViewService.getActiveReservations(idKlienta);
     }
 
     @GetMapping("/past/{idKlienta}")
     public List<RezerwacjaViewDTO> getPastReservations(@PathVariable Long idKlienta) {
+        rezerwacjaViewService.checkAndMarkExpired();
         return rezerwacjaViewService.getPastReservations(idKlienta);
+    }
+
+
+    @PostMapping("/odwolaj/{idRezerwacji}")
+    public boolean odwolajRezerwacje(@PathVariable Long idRezerwacji) {
+        return rezerwacjaViewService.odwolajRezerwacje(idRezerwacji);
     }
 }

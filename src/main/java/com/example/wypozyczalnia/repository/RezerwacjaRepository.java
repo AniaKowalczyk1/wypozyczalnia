@@ -13,4 +13,7 @@ public interface RezerwacjaRepository extends JpaRepository<Rezerwacja, Long> {
     List<Rezerwacja> findByKlientIdKlientaAndStatus(Long idKlienta, StatusRezerwacji status);
 
     List<Rezerwacja> findByKlientIdKlientaAndStatusNot(Long idKlienta, StatusRezerwacji status);
+
+    List<Rezerwacja> findByStatus(StatusRezerwacji status);
+
 }

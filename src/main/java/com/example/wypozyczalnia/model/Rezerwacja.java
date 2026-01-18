@@ -22,6 +22,10 @@ public class Rezerwacja {
     @JoinColumn(name = "id_klienta", nullable = false)
     private Klient klient;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_filii", nullable = false)
+    private Filia filia;
+
     @ManyToMany
     @JoinTable(
             name = "Rezerwacja_Egzemplarz",
@@ -45,6 +49,9 @@ public class Rezerwacja {
 
     public Klient getKlient() { return klient; }
     public void setKlient(Klient klient) { this.klient = klient; }
+
+    public Filia getFilia() { return filia; }
+    public void setFilia(Filia filia) { this.filia = filia; }
 
     public List<Egzemplarz> getEgzemplarze() { return egzemplarze; }
     public void setEgzemplarze(List<Egzemplarz> egzemplarze) { this.egzemplarze = egzemplarze; }

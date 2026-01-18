@@ -19,7 +19,8 @@ public class RezerwacjaController {
     @PostMapping
     public ResponseEntity<?> createRezerwacja(@RequestBody ReserveRequest request) {
         try {
-            Rezerwacja rezerwacja = rezerwacjaService.createRezerwacja(request);
+            Rezerwacja rezerwacja =
+                    rezerwacjaService.createRezerwacja(request);
             return ResponseEntity.ok(rezerwacja);
         } catch (Exception e) {
             e.printStackTrace();

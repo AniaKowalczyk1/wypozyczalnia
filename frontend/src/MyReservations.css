@@ -1,0 +1,118 @@
+/* ===== Panel Rezerwacji ===== */
+.rentals-panel {
+  padding: 80px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f2f5;
+  min-height: 100vh;
+  color: #333;
+  box-sizing: border-box;
+}
+
+/* ===== Nagłówki sekcji ===== */
+.rentals-panel h2 {
+  margin-bottom: 15px;
+  color: #4facfe;
+  font-size: 24px;
+  font-weight: 600;
+  border-bottom: 2px solid #4facfe;
+  padding-bottom: 5px;
+}
+
+/* ===== Tabela Rezerwacji ===== */
+.rentals-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 40px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden; /* Zapewnia zaokrąglone rogi */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.rentals-table thead {
+  background-color: #4facfe;
+  color: white;
+}
+
+.rentals-table th {
+  padding: 12px 15px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.rentals-table td {
+  padding: 12px 15px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+  vertical-align: middle;
+}
+
+/* ===== Wiersze i Grupowy Hover ===== */
+.reservation-row {
+  transition: background-color 0.2s ease;
+}
+
+/* Podświetlanie wszystkich wierszy w grupie (obsługiwane przez React state) */
+.hovered-group {
+  background-color: #f5f9ff !important;
+}
+
+/* Usuwamy obramowanie w ostatnim rzędzie */
+.rentals-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== Przycisk Odwołaj ===== */
+.cancel-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  width: 100%;
+  max-width: 100px;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.cancel-btn:hover {
+  background-color: #c0392b;
+  transform: scale(1.05);
+}
+
+.cancel-btn:active {
+  transform: scale(0.95);
+}
+
+/* ===== Pusta Tabela ===== */
+.empty-message {
+  text-align: center;
+  padding: 25px 0;
+  font-style: italic;
+  color: #888;
+  background-color: #fafafa;
+}
+
+/* ===== Responsywność ===== */
+@media (max-width: 1024px) {
+  .rentals-panel {
+    padding: 40px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rentals-table th,
+  .rentals-table td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .cancel-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}

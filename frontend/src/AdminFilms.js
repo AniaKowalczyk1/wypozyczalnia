@@ -14,7 +14,7 @@ function AdminFilms({ setIsLoggedIn }) {
 
     const fetchFilms = async () => {
         try {
-            const res = await axios.get('http://localhost:8080/api/films');
+            const res = await axios.get('http://localhost:8082/api/films');
             setFilms(res.data);
         } catch (err) {
             console.error("Błąd pobierania filmów");
@@ -35,7 +35,7 @@ function AdminFilms({ setIsLoggedIn }) {
     const handleDeleteFilm = async (id) => {
         if (!window.confirm("Czy na pewno chcesz usunąć ten tytuł?")) return;
         try {
-            await axios.delete(`http://localhost:8080/api/admin/films/${id}`);
+            await axios.delete(`http://localhost:8082/api/admin/films/${id}`);
             setMessage('🗑️ Film usunięty.');
             fetchFilms();
         } catch (err) {
@@ -46,7 +46,7 @@ function AdminFilms({ setIsLoggedIn }) {
     const handleAddFilm = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8080/api/admin/films', newFilm);
+            await axios.post('http://localhost:8082/api/admin/films', newFilm);
             setMessage('✅ Dodano nowy film!');
             setNewFilm({ tytul: '', gatunek: '', rokWydania: '', rezyser: '', opis: '' });
             fetchFilms();

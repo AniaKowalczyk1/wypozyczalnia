@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+  # 1. Wspólna Baza Danych
   db:
     image: postgres:15
     container_name: wypozyczalnia-db
@@ -21,6 +22,46 @@ services:
       timeout: 5s
       retries: 5
 
+  # 2. Mikroserwis Logowania i Rejestracji
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile.backend
+    container_name: wypozyczalnia-auth
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - wypozyczalnia-network
+    ports:
+      - "8081:8081" # Mapowanie na port 8081
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/wypozyczalnia
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SERVER_PORT: 8081
+
+  # 3. Mikroserwis Katalogu i Zasobów
+  film-service:
+    build:
+      context: ./film-service
+      dockerfile: Dockerfile.backend
+    container_name: wypozyczalnia-film
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - wypozyczalnia-network
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/wypozyczalnia
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SERVER_PORT: 8082
+
+
+  # 4. Główny Backend
   backend:
     build:
       context: .
@@ -38,6 +79,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 1234
 
+  # 5. Frontend (React)
   frontend:
     build:
       context: ./frontend

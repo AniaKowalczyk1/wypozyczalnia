@@ -23,7 +23,7 @@ function UserPanel({ setIsLoggedIn }) {
   // ===== Pobranie filmów =====
   const fetchFilms = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/films');
+      const res = await axios.get('http://localhost:8082/api/films');
       setFilms(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
@@ -34,7 +34,7 @@ function UserPanel({ setIsLoggedIn }) {
   // ===== Pobranie Top 3 =====
   const fetchTopFilms = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/films/popular');
+      const res = await axios.get('http://localhost:8082/api/films/popular');
       setTopFilms(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);

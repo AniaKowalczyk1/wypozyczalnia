@@ -33,7 +33,7 @@ function AdminPanel({ setIsLoggedIn }) {
     useEffect(() => {
         const fetchFilms = async () => {
             try {
-                const res = await axios.get('http://localhost:8080/api/films');
+                const res = await axios.get('http://localhost:8082/api/films');
                 setFilms(res.data);
             } catch (err) {
                 console.error(err);
@@ -162,7 +162,7 @@ function AdminPanel({ setIsLoggedIn }) {
             setCustomerLogin('');
 
             // Odświeżamy listę filmów, aby zaktualizować statusy egzemplarzy
-            const res = await axios.get('http://localhost:8080/api/films');
+            const res = await axios.get('http://localhost:8082/api/films');
             setFilms(res.data);
 
         } catch (err) {

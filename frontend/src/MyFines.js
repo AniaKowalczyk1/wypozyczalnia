@@ -50,7 +50,6 @@ function MyFines({ setIsLoggedIn }) {
     return date.toLocaleDateString('pl-PL');
   };
 
-  if (loading) return <p>Ładowanie kar...</p>;
   if (errorMessage) return <p>{errorMessage}</p>;
 
   return (

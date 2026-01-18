@@ -44,7 +44,7 @@ function RegisterPage() {
     }
 
     try {
-      await axios.post('http://localhost:8080/api/auth/register', {
+      await axios.post('http://localhost:8081/api/auth/register', {
         imie, nazwisko, adres, login: regLogin, email, haslo: regHaslo
       });
 
