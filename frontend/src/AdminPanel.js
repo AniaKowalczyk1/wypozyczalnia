@@ -5,19 +5,21 @@ import './UserPanel.css'; // Importujemy te same style co użytkownik
 
 function AdminPanel({ setIsLoggedIn }) {
     const adminFiliaId = localStorage.getItem('idFilii');
-    const nazwaFilii = localStorage.getItem('nazwaFilii');
     const [films, setFilms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [notification, setNotification] = useState(null);
-    const [selectedEgzemplarz, setSelectedEgzemplarz] = useState(null);
     const [adminCart, setAdminCart] = useState([]);
     const [isFinalizing, setIsFinalizing] = useState(false);
-    const [customerLogin, setCustomerLogin] = useState('');
     const [foundCustomer, setFoundCustomer] = useState(null);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [address, setAddress] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
+    const [paymentStep, setPaymentStep] = useState(false);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+    const [cashStep, setCashStep] = useState(false);
+    const [receivedAmount, setReceivedAmount] = useState('');
+    const [changeAmount, setChangeAmount] = useState(0);
 
     // Paginacja
     const [currentPage, setCurrentPage] = useState(1);
@@ -107,12 +109,12 @@ function AdminPanel({ setIsLoggedIn }) {
                 params: { imie: searchImie, nazwisko: searchNazwisko }
             });
             setFoundCustomer(res.data);
-            setShowAddForm(false); // Jeśli znaleziono, ukrywamy formularz rejestracji
+            setShowAddForm(false);
             showNotification("✅ Znaleziono klienta!");
         } catch (err) {
             setFoundCustomer(null);
             if (err.response && err.response.status === 404) {
-                setShowAddForm(true); // <--- TUTAJ: Włączamy formularz rejestracji
+                setShowAddForm(true);
                 showNotification("🔍 Nie znaleziono klienta. Możesz go teraz zarejestrować.");
             } else {
                 showNotification("❌ Błąd połączenia z bazą.");
@@ -135,10 +137,15 @@ function AdminPanel({ setIsLoggedIn }) {
         }
     };
 
-    const finalizeRental = async () => {
+    const finalizeRental = async (method) => {
         if (!foundCustomer || adminCart.length === 0) return;
 
-        // Ustawiamy termin zwrotu (np. za 30 dni)
+        // Jeśli wybrano kartę, symulujemy połączenie z terminalem
+        if (method === 'KARTA') {
+            setIsProcessingPayment(true);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
         const termin = new Date();
         termin.setDate(termin.getDate() + 30);
         const terminString = termin.toISOString().split('T')[0];
@@ -153,21 +160,29 @@ function AdminPanel({ setIsLoggedIn }) {
                 adresDostawy: null
             });
 
-            showNotification("🎉 Wypożyczenie zakończone sukcesem!");
+            showNotification(`🎉 Sukces! Płatność ${method} zaakceptowana.`);
 
-            // Czyścimy wszystko po sukcesie
+            // Reset wszystkich stanów
             setAdminCart([]);
             setIsFinalizing(false);
+            setPaymentStep(false);
+            setCashStep(false);
+            setReceivedAmount('');
+            setChangeAmount(0);
+            setIsProcessingPayment(false);
             setFoundCustomer(null);
-            setCustomerLogin('');
+            setFirstName('');
+            setLastName('');
+            setAddress('');
 
-            // Odświeżamy listę filmów, aby zaktualizować statusy egzemplarzy
+
             const res = await axios.get('http://localhost:8082/api/films');
             setFilms(res.data);
 
         } catch (err) {
             console.error(err);
-            showNotification("❌ Błąd podczas finalizacji wypożyczenia.");
+            showNotification("❌ Błąd podczas finalizacji.");
+            setIsProcessingPayment(false);
         }
     };
 
@@ -178,8 +193,19 @@ function AdminPanel({ setIsLoggedIn }) {
         return 7.0 * numFilms;
     };
 
+    const handleCashInput = (value) => {
+        setReceivedAmount(value);
+        const price = calculatePrice(adminCart.length);
+        const amount = parseFloat(value);
+        if (!isNaN(amount) && amount >= price) {
+            setChangeAmount(amount - price);
+        } else {
+            setChangeAmount(0);
+        }
+    };
+
     return (
-        <div className="user-panel"> {/* Używamy tej samej klasy głównej */}
+        <div className="user-panel">
             <AdminNavbar setIsLoggedIn={setIsLoggedIn} />
             {notification && <div className="notification">{notification}</div>}
 
@@ -299,9 +325,10 @@ function AdminPanel({ setIsLoggedIn }) {
                                 .filter(e => String(e.filiaId) === String(adminFiliaId))
                                 .map(e => (
                                     <ul key={e.idEgzemplarza} className="cart-list" style={{marginTop: '5px'}}>
-                                        <li style={{fontSize: '13px', padding: '8px'}}>
-                                            ID: {e.idEgzemplarza} | {e.filiaNazwa || 'Twoja Filia'} |
-                                            <span className={`status-badge ${e.status}`}> {e.status}</span>
+                                        <li style={{fontSize: '13px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                                            <span>ID: {e.idEgzemplarza}</span>
+                                            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                                <span className={`status-badge ${e.status}`}> {e.status}</span>
 
                                             {e.status === 'DOSTEPNY' && (
                                                 <button
@@ -311,6 +338,7 @@ function AdminPanel({ setIsLoggedIn }) {
                                                     Wybierz
                                                 </button>
                                             )}
+                                            </div>
                                         </li>
                                     </ul>
                                 ))
@@ -353,11 +381,11 @@ function AdminPanel({ setIsLoggedIn }) {
                                     value={firstName}
                                     onChange={(e) => setFirstName(e.target.value)}
                                     style={{
-                                        width: '100%',         // Pełna szerokość
+                                        width: '100%',
                                         padding: '10px',
                                         borderRadius: '5px',
                                         border: '1px solid #ccc',
-                                        boxSizing: 'border-box' // Gwarantuje, że padding nie zwiększy szerokości
+                                        boxSizing: 'border-box'
                                     }}
                                 />
                                 <input
@@ -366,7 +394,7 @@ function AdminPanel({ setIsLoggedIn }) {
                                     value={lastName}
                                     onChange={(e) => setLastName(e.target.value)}
                                     style={{
-                                        width: '100%',         // Pełna szerokość
+                                        width: '100%',
                                         padding: '10px',
                                         borderRadius: '5px',
                                         border: '1px solid #ccc',
@@ -396,13 +424,95 @@ function AdminPanel({ setIsLoggedIn }) {
                             </div>
                         </div>
 
-                        {foundCustomer && (
-                            <div className="client-data-panel" style={{ textAlign: 'left', background: '#eafaf1' }}>
-                                <p>✅ <strong>{foundCustomer.imie} {foundCustomer.nazwisko}</strong></p>
+                        {foundCustomer && !paymentStep && (
+                            <div className="client-data-panel" style={{ textAlign: 'left', background: '#eafaf1', padding: '15px', borderRadius: '8px' }}>
+                                <p>✅ Klient: <strong>{foundCustomer.imie} {foundCustomer.nazwisko}</strong></p>
                                 <p>Adres: {foundCustomer.adres}</p>
-                                <button className="checkout-btn" onClick={finalizeRental}>
-                                    Potwierdź i Wypożycz
+                                <button
+                                    className="checkout-btn"
+                                    style={{ backgroundColor: '#27ae60' }}
+                                    onClick={() => setPaymentStep(true)}
+                                >
+                                    Przejdź do płatności 💳
                                 </button>
+                            </div>
+                        )}
+
+                        {paymentStep && (
+                            <div className="payment-selection" style={{ marginTop: '20px', padding: '20px', background: '#f0f3f4', borderRadius: '10px', textAlign: 'center' }}>
+
+                                {isProcessingPayment ? (
+                                    <div style={{ padding: '20px' }}>
+                                        <div className="loader" style={{ margin: '0 auto 15px auto' }}></div>
+                                        <h4 style={{ color: '#3498db' }}>Połączono z terminalem...</h4>
+                                        <p>Proszę zbliżyć kartę lub telefon do czytnika.</p>
+                                    </div>
+                                ) : cashStep ? (
+                                    <div style={{ textAlign: 'left' }}>
+                                        <h4 style={{ textAlign: 'center', marginBottom: '15px' }}>💵 Rozliczenie gotówkowe</h4>
+                                        <p style={{ fontSize: '16px' }}>Do zapłaty: <strong>{calculatePrice(adminCart.length).toFixed(2)} zł</strong></p>
+
+                                        <div style={{ margin: '15px 0' }}>
+                                            <label style={{ fontSize: '13px', color: '#666' }}>Kwota od klienta:</label>
+                                            <input
+                                                type="number"
+                                                placeholder="0.00"
+                                                value={receivedAmount}
+                                                onChange={(e) => handleCashInput(e.target.value)}
+                                                style={{ width: '100%', padding: '12px', fontSize: '20px', fontWeight: 'bold', marginTop: '5px', borderRadius: '5px', border: '2px solid #2ecc71' }}
+                                                autoFocus
+                                            />
+                                        </div>
+
+                                        <div style={{ background: '#eafaf1', padding: '15px', borderRadius: '5px', textAlign: 'center', marginBottom: '15px' }}>
+                                            <span style={{ fontSize: '12px', color: '#27ae60' }}>RESZTA:</span>
+                                            <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#27ae60' }}>{changeAmount.toFixed(2)} zł</div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                            <button className="add-btn" style={{ flex: 1, backgroundColor: '#95a5a6' }} onClick={() => setCashStep(false)}>Wstecz</button>
+                                            <button
+                                                className="add-btn"
+                                                style={{ flex: 2, backgroundColor: '#2ecc71' }}
+                                                disabled={parseFloat(receivedAmount) < calculatePrice(adminCart.length) || !receivedAmount}
+                                                onClick={() => finalizeRental('GOTÓWKA')}
+                                            >
+                                                Potwierdź i wydaj resztę
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <h4 style={{ marginBottom: '10px' }}>💰 Wybierz formę płatności</h4>
+                                        <p style={{ fontSize: '18px', marginBottom: '20px' }}>Kwota: <strong>{calculatePrice(adminCart.length).toFixed(2)} zł</strong></p>
+
+                                        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                                            <button
+                                                className="add-btn"
+                                                style={{ flex: 1, backgroundColor: '#2ecc71', padding: '15px', height: 'auto' }}
+                                                onClick={() => setCashStep(true)}
+                                            >
+                                                <div style={{ fontSize: '24px', marginBottom: '5px' }}>💵</div>
+                                                Gotówka
+                                            </button>
+                                            <button
+                                                className="add-btn"
+                                                style={{ flex: 1, backgroundColor: '#3498db', padding: '15px', height: 'auto' }}
+                                                onClick={() => finalizeRental('KARTA')} // TUTAJ: Uruchamia symulację karty
+                                            >
+                                                <div style={{ fontSize: '24px', marginBottom: '5px' }}>💳</div>
+                                                Karta
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            style={{ background: 'none', border: 'none', color: '#7f8c8d', cursor: 'pointer', marginTop: '15px', textDecoration: 'underline' }}
+                                            onClick={() => setPaymentStep(false)}
+                                        >
+                                            ⬅️ Wróć do danych klienta
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         )}
 
@@ -421,7 +531,7 @@ function AdminPanel({ setIsLoggedIn }) {
                                     style={{ width: '100%', marginTop: '10px', backgroundColor: '#27ae60' }}
                                     onClick={handleQuickRegister}
                                 >
-                                    Zapisz i kontynuuj 💾
+                                    Zapisz i kontynuuj
                                 </button>
                             </div>
                         )}
