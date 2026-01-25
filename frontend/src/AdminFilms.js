@@ -6,7 +6,7 @@ function AdminFilms({ setIsLoggedIn }) {
     const [films, setFilms] = useState([]);
     const [message, setMessage] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [newFilm, setNewFilm] = useState({ tytul: '', gatunek: '', rokWydania: '', rezyser: '', opis: '' });
+    const [newFilm, setNewFilm] = useState({ tytul: '', gatunek: '', rokWydania: '', rezyser: '', opis: '', plakat: '' });
 
     useEffect(() => {
         fetchFilms();
@@ -21,14 +21,11 @@ function AdminFilms({ setIsLoggedIn }) {
         }
     };
 
-    // Filtrowanie filmów na podstawie wpisanej frazy
     const filteredFilms = films
         .filter(f => f.tytul.toLowerCase().includes(searchTerm.toLowerCase()))
         .sort((a, b) => {
             const countA = a.egzemplarze?.length || 0;
             const countB = b.egzemplarze?.length || 0;
-
-            // Filmy z 0 egzemplarzy (do usunięcia) idą na samą górę
             return countA - countB;
         });
 
@@ -48,7 +45,7 @@ function AdminFilms({ setIsLoggedIn }) {
         try {
             await axios.post('http://localhost:8082/api/admin/films', newFilm);
             setMessage('✅ Dodano nowy film!');
-            setNewFilm({ tytul: '', gatunek: '', rokWydania: '', rezyser: '', opis: '' });
+            setNewFilm({ tytul: '', gatunek: '', rokWydania: '', rezyser: '', opis: '', plakat: '' });
             fetchFilms();
         } catch (err) {
             setMessage('❌ Błąd dodawania filmu.');
@@ -72,6 +69,16 @@ function AdminFilms({ setIsLoggedIn }) {
                             value={newFilm.tytul}
                             onChange={e => setNewFilm({...newFilm, tytul: e.target.value})}
                             required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Link do plakatu (URL)</label>
+                        <input
+                            type="text"
+                            placeholder="https://link-do-obrazka.jpg"
+                            value={newFilm.plakat}
+                            onChange={e => setNewFilm({...newFilm, plakat: e.target.value})}
                         />
                     </div>
 

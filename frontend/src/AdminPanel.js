@@ -90,7 +90,6 @@ function AdminPanel({ setIsLoggedIn }) {
     };
 
     const removeFromAdminCart = (idEgzemplarza) => {
-        // Tworzymy nową listę bez elementu o danym ID
         setAdminCart(adminCart.filter(item => item.idEgzemplarza !== idEgzemplarza));
         showNotification("➖ Usunięto film z listy.");
     };
@@ -350,87 +349,82 @@ function AdminPanel({ setIsLoggedIn }) {
 
             {isFinalizing && (
                 <div className="blik-modal">
-                    <div className="blik-modal-content" style={{ maxWidth: '500px' }}>
-                        <h3>👤 Finalizacja wypożyczenia</h3>
-                        <div style={{ textAlign: 'left', marginBottom: '20px' }}>
-                            <p><strong>Wybrane filmy:</strong></p>
-                            <ul>
+                    <div className="blik-modal-content" style={{ maxWidth: '450px', padding: '15px' }}>
+                        <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>👤 Finalizacja wypożyczenia</h3>
+
+                        <div style={{ textAlign: 'left', marginBottom: '10px' }}>
+                            <p style={{ fontSize: '0.9rem', marginBottom: '5px' }}><strong>Wybrane filmy:</strong></p>
+                            <ul style={{
+                                maxHeight: '100px',
+                                overflowY: 'auto',
+                                paddingLeft: '20px',
+                                fontSize: '0.85rem',
+                                background: '#f9f9f9',
+                                borderRadius: '5px',
+                                border: '1px solid #eee',
+                                margin: '0 0 5px 0'
+                            }}>
                                 {adminCart.map(item => (
-                                    <li key={item.idEgzemplarza} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                    <li key={item.idEgzemplarza} style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
                                         <span>{item.filmTytul} (ID: {item.idEgzemplarza})</span>
                                         <button
                                             onClick={() => removeFromAdminCart(item.idEgzemplarza)}
-                                            style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}
+                                            style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
                                         >
                                             Usuń
                                         </button>
                                     </li>
                                 ))}
                             </ul>
-                            <p>Łączna kwota: <strong>{calculatePrice(adminCart.length).toFixed(2)} zł</strong></p>
+                            <p style={{ margin: '5px 0', fontSize: '0.95rem' }}>Łączna kwota: <strong>{calculatePrice(adminCart.length).toFixed(2)} zł</strong></p>
                         </div>
 
-                        <hr />
+                        <hr style={{ margin: '10px 0', opacity: 0.3 }} />
 
-                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
-                            <label>Dane klienta:</label>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '5px' }}>
-                                <input
-                                    type="text"
-                                    placeholder="Imię"
-                                    value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px',
-                                        borderRadius: '5px',
-                                        border: '1px solid #ccc',
-                                        boxSizing: 'border-box'
-                                    }}
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Nazwisko"
-                                    value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px',
-                                        borderRadius: '5px',
-                                        border: '1px solid #ccc',
-                                        boxSizing: 'border-box'
-                                    }}
-                                />
+                        {!paymentStep && !foundCustomer && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Imię"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                        style={{ padding: '8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '0.9rem' }}
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Nazwisko"
+                                        value={lastName}
+                                        onChange={(e) => setLastName(e.target.value)}
+                                        style={{ padding: '8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '0.9rem' }}
+                                    />
+                                </div>
                                 <button
                                     className="nav-btn"
                                     style={{
-                                        height: '40px',
-                                        width: '100%',
+                                        height: '35px',
                                         backgroundColor: '#3498db',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '5px',
-                                        fontWeight: 'bold',
-                                        cursor: 'pointer',
+                                        fontSize: '0.9rem',
+                                        width: '100%', // Wymuszenie pełnej szerokości
+                                        margin: '0',    // Reset marginesów
                                         display: 'flex',
-                                        alignItems: 'center',
                                         justifyContent: 'center',
-                                        margin: '0'
+                                        alignItems: 'center'
                                     }}
                                     onClick={handleCheckCustomer}
                                 >
                                     Szukaj klienta 🔍
                                 </button>
                             </div>
-                        </div>
+                        )}
 
                         {foundCustomer && !paymentStep && (
-                            <div className="client-data-panel" style={{ textAlign: 'left', background: '#eafaf1', padding: '15px', borderRadius: '8px' }}>
-                                <p>✅ Klient: <strong>{foundCustomer.imie} {foundCustomer.nazwisko}</strong></p>
-                                <p>Adres: {foundCustomer.adres}</p>
+                            <div className="client-data-panel" style={{ textAlign: 'left', background: '#eafaf1', padding: '10px', borderRadius: '8px', marginTop: '5px' }}>
+                                <p style={{ margin: '0', fontSize: '0.9rem' }}>✅ Klient: <strong>{foundCustomer.imie} {foundCustomer.nazwisko}</strong></p>
+                                <p style={{ margin: '2px 0', fontSize: '0.85rem' }}>Adres: {foundCustomer.adres}</p>
                                 <button
                                     className="checkout-btn"
-                                    style={{ backgroundColor: '#27ae60' }}
+                                    style={{ backgroundColor: '#27ae60', padding: '8px', marginTop: '5px', height: '35px', fontSize: '0.9rem', width: '100%' }}
                                     onClick={() => setPaymentStep(true)}
                                 >
                                     Przejdź do płatności 💳
@@ -439,99 +433,90 @@ function AdminPanel({ setIsLoggedIn }) {
                         )}
 
                         {paymentStep && (
-                            <div className="payment-selection" style={{ marginTop: '20px', padding: '20px', background: '#f0f3f4', borderRadius: '10px', textAlign: 'center' }}>
-
+                            <div className="payment-selection" style={{ marginTop: '5px', padding: '12px', background: '#f0f3f4', borderRadius: '10px', textAlign: 'center' }}>
                                 {isProcessingPayment ? (
-                                    <div style={{ padding: '20px' }}>
-                                        <div className="loader" style={{ margin: '0 auto 15px auto' }}></div>
-                                        <h4 style={{ color: '#3498db' }}>Połączono z terminalem...</h4>
-                                        <p>Proszę zbliżyć kartę lub telefon do czytnika.</p>
+                                    <div style={{ padding: '10px' }}>
+                                        <div className="loader" style={{ width: '30px', height: '30px', margin: '0 auto 10px auto' }}></div>
+                                        <h4 style={{ color: '#3498db', fontSize: '1rem', margin: '0' }}>Połączono z terminalem...</h4>
                                     </div>
                                 ) : cashStep ? (
                                     <div style={{ textAlign: 'left' }}>
-                                        <h4 style={{ textAlign: 'center', marginBottom: '15px' }}>💵 Rozliczenie gotówkowe</h4>
-                                        <p style={{ fontSize: '16px' }}>Do zapłaty: <strong>{calculatePrice(adminCart.length).toFixed(2)} zł</strong></p>
-
-                                        <div style={{ margin: '15px 0' }}>
-                                            <label style={{ fontSize: '13px', color: '#666' }}>Kwota od klienta:</label>
+                                        <h4 style={{ textAlign: 'center', marginBottom: '8px', fontSize: '1rem' }}>💵 Gotówka</h4>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                            <label style={{ fontSize: '0.85rem' }}>Otrzymano:</label>
                                             <input
                                                 type="number"
-                                                placeholder="0.00"
                                                 value={receivedAmount}
                                                 onChange={(e) => handleCashInput(e.target.value)}
-                                                style={{ width: '100%', padding: '12px', fontSize: '20px', fontWeight: 'bold', marginTop: '5px', borderRadius: '5px', border: '2px solid #2ecc71' }}
+                                                style={{ width: '100px', padding: '5px', fontSize: '1.1rem', textAlign: 'right' }}
                                                 autoFocus
                                             />
                                         </div>
-
-                                        <div style={{ background: '#eafaf1', padding: '15px', borderRadius: '5px', textAlign: 'center', marginBottom: '15px' }}>
-                                            <span style={{ fontSize: '12px', color: '#27ae60' }}>RESZTA:</span>
-                                            <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#27ae60' }}>{changeAmount.toFixed(2)} zł</div>
+                                        <div style={{ background: '#eafaf1', padding: '8px', borderRadius: '5px', textAlign: 'center', marginBottom: '10px' }}>
+                                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#27ae60' }}>
+                                                Reszta: {changeAmount.toFixed(2)} zł
+                                            </div>
                                         </div>
-
-                                        <div style={{ display: 'flex', gap: '10px' }}>
-                                            <button className="add-btn" style={{ flex: 1, backgroundColor: '#95a5a6' }} onClick={() => setCashStep(false)}>Wstecz</button>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button className="add-btn" style={{ flex: 1, backgroundColor: '#95a5a6', height: '35px', fontSize: '0.85rem' }} onClick={() => setCashStep(false)}>Wstecz</button>
                                             <button
                                                 className="add-btn"
-                                                style={{ flex: 2, backgroundColor: '#2ecc71' }}
+                                                style={{ flex: 2, backgroundColor: '#2ecc71', height: '35px', fontSize: '0.85rem' }}
                                                 disabled={parseFloat(receivedAmount) < calculatePrice(adminCart.length) || !receivedAmount}
                                                 onClick={() => finalizeRental('GOTÓWKA')}
                                             >
-                                                Potwierdź i wydaj resztę
+                                                Finalizuj
                                             </button>
                                         </div>
                                     </div>
                                 ) : (
                                     <>
-                                        <h4 style={{ marginBottom: '10px' }}>💰 Wybierz formę płatności</h4>
-                                        <p style={{ fontSize: '18px', marginBottom: '20px' }}>Kwota: <strong>{calculatePrice(adminCart.length).toFixed(2)} zł</strong></p>
-
-                                        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                                        <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Metoda płatności:</p>
+                                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
                                             <button
                                                 className="add-btn"
-                                                style={{ flex: 1, backgroundColor: '#2ecc71', padding: '15px', height: 'auto' }}
+                                                style={{ flex: 1, backgroundColor: '#2ecc71', padding: '10px' }}
                                                 onClick={() => setCashStep(true)}
                                             >
-                                                <div style={{ fontSize: '24px', marginBottom: '5px' }}>💵</div>
-                                                Gotówka
+                                                <div style={{ fontSize: '1.2rem' }}>💵</div>
+                                                <span style={{ fontSize: '0.85rem' }}>Gotówka</span>
                                             </button>
                                             <button
                                                 className="add-btn"
-                                                style={{ flex: 1, backgroundColor: '#3498db', padding: '15px', height: 'auto' }}
-                                                onClick={() => finalizeRental('KARTA')} // TUTAJ: Uruchamia symulację karty
+                                                style={{ flex: 1, backgroundColor: '#3498db', padding: '10px' }}
+                                                onClick={() => finalizeRental('KARTA')}
                                             >
-                                                <div style={{ fontSize: '24px', marginBottom: '5px' }}>💳</div>
-                                                Karta
+                                                <div style={{ fontSize: '1.2rem' }}>💳</div>
+                                                <span style={{ fontSize: '0.85rem' }}>Karta</span>
                                             </button>
                                         </div>
-
                                         <button
-                                            style={{ background: 'none', border: 'none', color: '#7f8c8d', cursor: 'pointer', marginTop: '15px', textDecoration: 'underline' }}
+                                            style={{ background: 'none', border: 'none', color: '#7f8c8d', cursor: 'pointer', marginTop: '8px', fontSize: '0.8rem', textDecoration: 'underline' }}
                                             onClick={() => setPaymentStep(false)}
                                         >
-                                            ⬅️ Wróć do danych klienta
+                                            Powrót do klienta
                                         </button>
                                     </>
                                 )}
                             </div>
                         )}
 
-                        {showAddForm && (
-                            <div style={{ marginTop: '15px', padding: '15px', background: '#fdf2e9', borderRadius: '5px' }}>
-                                <p style={{ color: '#e67e22', fontWeight: 'bold' }}>⚠️ Klienta nie ma w bazie. Dodaj adres, aby go zarejestrować:</p>
+                        {showAddForm && !paymentStep && (
+                            <div style={{ marginTop: '8px', padding: '10px', background: '#fdf2e9', borderRadius: '5px' }}>
+                                <p style={{ color: '#e67e22', fontWeight: 'bold', fontSize: '0.8rem', margin: '0' }}>Brak klienta. Podaj adres:</p>
                                 <input
                                     type="text"
-                                    placeholder="Adres zamieszkania klienta..."
+                                    placeholder="Adres..."
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
-                                    style={{ width: '100%', padding: '10px', marginTop: '10px', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', padding: '8px', marginTop: '5px', boxSizing: 'border-box', fontSize: '0.85rem' }}
                                 />
                                 <button
                                     className="add-btn"
-                                    style={{ width: '100%', marginTop: '10px', backgroundColor: '#27ae60' }}
+                                    style={{ width: '100%', marginTop: '8px', backgroundColor: '#27ae60', height: '35px', fontSize: '0.85rem' }}
                                     onClick={handleQuickRegister}
                                 >
-                                    Zapisz i kontynuuj
+                                    Zarejestruj
                                 </button>
                             </div>
                         )}
@@ -539,37 +524,28 @@ function AdminPanel({ setIsLoggedIn }) {
                         <button
                             className="remove-btn"
                             style={{
-                                height: '40px',
-                                width: '100%',
+                                height: '35px',
+                                width: '100%',     // Pełna szerokość
                                 backgroundColor: '#95a5a6',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '5px',
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                marginTop: '10px',
+                                marginRight: '0',   // Reset marginesów
+                                marginLeft: '0',
                                 display: 'flex',
-                                alignItems: 'center',
                                 justifyContent: 'center',
-                                margin: '0', // Wyrównujemy do lewej krawędzi (brak marginesu)
-                                marginTop: '10px' // Tylko odstęp od góry
+                                alignItems: 'center'
                             }}
                             onClick={() => {
                                 setIsFinalizing(false);
                                 setFoundCustomer(null);
+                                setPaymentStep(false);
+                                setCashStep(false);
+                                setShowAddForm(false);
                             }}
                         >
-                            ⬅️ Powrót do katalogu
+                            ⬅️ Anuluj i wróć
                         </button>
                     </div>
-                </div>
-            )}
-
-            {/* Paginacja dół */}
-            {totalPages > 1 && (
-                <div className="pagination" style={{marginTop: '30px'}}>
-                    <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>◀ Poprzednia</button>
-                    <span> Strona {currentPage} z {totalPages} </span>
-                    <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>Następna ▶</button>
                 </div>
             )}
         </div>
